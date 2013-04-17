@@ -25,6 +25,38 @@
 \maketitle
 
 
+
+\section{Quick start}
+\label{sec:quickstart}
+
+In order to analyze a single sample with the suggested pipeline we have included the function \texttt{wrapKnown}, which takes a BAM file and reference genome database as argument (plus arguments for the different functions) and
+executes all necesary steps to find expression estimates. This function returns processed reads (procBam object), path counts (pathCounts object),
+read start and fragment length distributions (readDistrs object) and estimated expressions (expressionSet object).
+
+The \texttt{wrapKnown} function needs a genome database generated with the following code:
+
+\begin{verbatim}
+library(GenomicFeatures)
+genome='hg19'
+genDB<-makeTranscriptDbFromUCSC(genome=genome, tablename=''refGene'')
+hg19DB <- procGenome(genDB=genDB, genome=genome, mc.cores=6)
+\end{verbatim}
+
+It is also necessary that the BAM file to be analyzed is indexed, and that this index is placed in the same directory as the corresponding BAM. (the \texttt{samtools} ''index'' function 
+can be used to generate such an index).
+
+To call \texttt{wrapKnown} simply use:
+
+\begin{verbatim}
+  bamFile="/path_to_bam/sorted.bam"
+  ans <- wrapKnown(bamFile=bamFile, mc.cores.int=4, mc.cores=3, genomeDB=hg19DB, readLength=101)
+  names(ans)
+  head(exprs(ans\$exp))
+\end{verbatim}
+
+For information on the parameters please refer to the man page of the function. The following sections explain in detail the model, functions and classes included in the package.
+
+
 \section{Introduction}
 \label{sec:intro}
 

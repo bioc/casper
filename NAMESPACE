@@ -5,9 +5,10 @@ importFrom(VGAM,vglm,betabinomial.ab,Coef)
 importFrom(mgcv,gam,predict.gam,s)
 importFrom(GenomicFeatures, transcripts, exonsBy)
 importFrom(survival,Surv,survfit)
+importFrom(Rsamtools, scanBamWhat, scanBamHeader, scanBamFlag, ScanBamParam, scanBam)
 
 #export regular functions
-export(calcExp, getDistrs, getIsland, genePlot, pathCounts, procBam, procGenome, rmShortInserts, transcripts, getReads, getNreads, getChr, getIsland, subsetGenome, mergeExp )
+export(calcExp, getDistrs, getIsland, genePlot, pathCounts, procBam, procGenome, rmShortInserts, transcripts, getReads, getNreads, getChr, getIsland, subsetGenome, mergeExp, wrapKnown, simReads )
 
 exportClasses(annotatedGenome, pathCounts, procBam)
 #export general methods

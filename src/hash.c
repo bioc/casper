@@ -183,7 +183,7 @@ VMDEXTERNSTATIC int hash_insert(hash_t *tptr, const char *key, int data) {
 
   node=(struct hash_node_t *) malloc(sizeof(hash_node_t));
   node->data=data;
-  node->key = (char*) malloc((strlen(key)+1)*(sizeof(char)));
+  //node->key = (char*) malloc((strlen(key)+1)*(sizeof(char)));
   node->key=m_strdup(key);
   node->next=tptr->bucket[h];
   tptr->bucket[h]=node;
@@ -260,6 +260,7 @@ VMDEXTERNSTATIC void hash_destroy(hash_t *tptr) {
     while (node != NULL) { 
       last = node;   
       node = node->next;
+      free(last->key);
       free(last);
     }
   }     

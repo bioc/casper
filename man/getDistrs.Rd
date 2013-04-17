@@ -12,20 +12,27 @@
   left-end read and the end of the right-end read.
 }
 \usage{
-getDistrs(DB, bam, nreads=4*10^6)
+getDistrs(DB, bam, islandid, verbose, nreads=4*10^6)
 }
 \arguments{
   \item{DB}{
-      Annotated genome. Object of class \code{knownGenome} as returned by \code{procGenome}.
+    Annotated genome. Object of class \code{knownGenome} as returned by \code{procGenome}.
   }
   \item{bam}{
-      Aligned reads, as returned by \code{scanBam}. It must be a list with
-      elements 'qname', 'rname', 'qwidth', 'pos' and 'mpos'.
+    Aligned reads, as returned by \code{scanBam}. It must be a list with
+    elements 'qname', 'rname', 'qwidth', 'pos' and 'mpos'.
+  }
+  \item{islandid}{
+    Island IDs of islands to be used in the read start distribution
+    calculations (defaults to genes with only one annotated variant)
+  }
+  \item{verbose}{
+    Set to \code{TRUE} to print progress information.
   }
   \item{nreads}{
-      To speed up computations, only the first \code{nreads} are used to
-      obtain the estimates. The default value of 4 milions usually gives
-      highly precise estimates.
+    To speed up computations, only the first \code{nreads} are used to
+    obtain the estimates. The default value of 4 milions usually gives
+    highly precise estimates.
   }
 }
 \value{

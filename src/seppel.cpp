@@ -755,7 +755,7 @@ double Seppel::calculatePrior(Model* model) {
         for (int i=0; i< nbVars; i++) {  
 
           Variant* v= model->get(i); 
-
+	  
           Sk[v->exonCount -1]++;
 
         }

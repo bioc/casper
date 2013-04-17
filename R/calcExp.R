@@ -11,7 +11,8 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
   burnin <- as.integer(burnin)
   verbose <- as.integer(verbose)
   if ((niter<=burnin) & citype==2) stop("Too many burnin iterations specified. Decrease burnin or increase niter")
-  if (missing(islandid)) islandid <- names(genomeDB@islands)[elementLengths(genomeDB@islands)>1]
+  #if (missing(islandid)) islandid <- names(genomeDB@islands)[elementLengths(genomeDB@islands)>1]
+  if (missing(islandid)) islandid <- names(genomeDB@islands)
 
   exons <- as.integer(names(genomeDB@islands@unlistData))
   names(exons) <- rep(names(genomeDB@islands), elementLengths(genomeDB@islands))
@@ -55,7 +56,7 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
   }
 
       #Run
-    sel <- !sapply(pc[islandid], is.null)
+  sel <- !sapply(pc[islandid], is.null)
     all <- islandid
     islandid <- islandid[sel]
   if (verbose) cat("Obtaining expression estimates...\n")
@@ -119,6 +120,7 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
         fdata$ci95.low <- qnorm(alpha/2,mean=exprsx,sd=se)
         fdata$ci95.high <- qnorm(1-alpha/2,mean=exprsx,sd=se)
         sel <- round(fdata$ci95.low,10)<0 & !is.na(se); fdata$ci95.low[sel] <- 0
+        se[sel][se[sel]==0] <- 1e-20
         fdata$ci95.high[sel] <- unlist(mapply(function(m,s) casper:::qtnorm(1-alpha/2,mean=m,sd=s,lower=0,upper=1), as.list(exprsx[sel,1]), as.list(se[sel])))
         sel <- round(fdata$ci95.high,10)>1 & !is.na(se); fdata$ci95.high[sel] <- 1
         fdata$ci95.low[sel] <- unlist(mapply(function(m,s) casper:::qtnorm(alpha/2,mean=m,sd=s,lower=0,upper=1), as.list(exprsx[sel,1]), as.list(se[sel])))
@@ -127,7 +129,15 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
     }
     if (citype==2) {
       if(sum(unlist(lapply(ans, function(x) is.na(x[[3]]))))==0){
-        fdata$se <- lapply(ans, function(z) (colMeans(z[[3]]^2) - colMeans(z[[3]])^2) * nrow(z)/(nrow(z) - 1)) #Added: store SE
+        if (mc.cores>1) {
+          if ('multicore' %in% loadedNamespaces()) {
+           se <- unlist(multicore::mclapply(ans, function(z) (colMeans(z[[3]]^2) - colMeans(z[[3]])^2) * nrow(z[[3]])/(nrow(z[[3]]) - 1), mc.cores=mc.cores))
+         } else stop('multicore library has not been loaded!')
+        } else se <- unlist(lapply(ans, function(z) (colMeans(z[[3]]^2) - colMeans(z[[3]])^2) * nrow(z[[3]])/(nrow(z[[3]]) - 1)))
+        
+        if(length(miss)>0) se <- c(se, missSE)
+        #fdata$se <- lapply(ans, function(z) (colMeans(z[[3]]^2) - colMeans(z[[3]])^2) * nrow(z)/(nrow(z) - 1)) #Added: store SE
+        fdata$se <- se
         if (!rpkm) { #Added
           q <- lapply(ans,function(z) apply(z[[3]],2,quantile,probs=c(.025,.975)))
           q <- t(do.call(cbind,q))
@@ -147,7 +157,6 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
         }
       }
     }
-      
   rownames(exprsx) <- rownames(fdata) <- fdata$transcrips
   
   #Compute log(RPKM)
@@ -155,11 +164,12 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
     if (citype != 0) se.logpi <- fdata$se / exprsx #Added: delta method for Var(log(pi))
     nreads <- nreads[unique(as.character(fdata$gene))]
     totReads <- sum(nreads) + priorqGeneExpr*length(nreads) #Modified: totReads includes prior sample size
-    geneLength <- sum(width(genomeDB@islands[unique(as.character(fdata$gene))])) #Modified: deals with GRanges (faster)
+    #geneLength <- sum(width(genomeDB@islands[unique(as.character(fdata$gene))])) #Modified: deals with GRanges (faster)
+    txLength <- txLength(genomeDB=genomeDB)
     apost <- (nreads+(priorqGeneExpr-1)) #Added
     theta <- apost/totReads #Added
-    theta.rpkm <- theta/(geneLength/10^9)  #Modified: assign posterior mode
-    exprsx <- log(exprsx) + log(theta.rpkm[as.character(fdata$gene)]) #Added
+    theta.rpkm <- theta[as.character(fdata$gene)]/(txLength[fdata$transcript]/10^9)  #Modified: assign posterior mode
+    exprsx <- log(exprsx) + log(theta.rpkm) #Added
     if (citype != 0) {
       se.theta <- sqrt(apost * (1-apost/totReads) / (totReads * (totReads+1))) #Added
       se.logtheta <- se.theta / theta #Added

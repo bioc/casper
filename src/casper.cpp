@@ -743,6 +743,7 @@ void Casper::normapprox(double **S, double** G, double*** H, double* mode, doubl
 
 
   int rowS, colS;
+  double mode_max;
 
   for (int l = 0; l < n - 1; l++) {
 
@@ -784,7 +785,10 @@ void Casper::normapprox(double **S, double** G, double*** H, double* mode, doubl
 
 	    }
 
-	  for (int d = 0; d < n - 1; d++) S[rowS][colS] -= (priorq - 1.0) * (H[d][l][m] * mode[d] - G[d][l] * G[d][m]) / pow(mode[d], 2);
+	  for (int d = 0; d < n - 1; d++) {
+	    mode_max=max_xy(mode[d], 1e-8);
+	    S[rowS][colS] -= (priorq - 1.0) * (H[d][l][m] * mode_max - G[d][l] * G[d][m]) / pow(mode_max, 2);
+          }
 
 	  if (l != m) S[colS][rowS] = S[rowS][colS];
 

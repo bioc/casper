@@ -1,5 +1,8 @@
 \name{pathCounts}
 \alias{pathCounts}
+\alias{pathCounts-method}
+\alias{pathCounts,list-method}
+\alias{pathCounts,procBam-method}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
   Compute exon path counts
@@ -8,7 +11,7 @@
   Compute counts for exon paths visited by aligned reads
 }
 \usage{
-pathCounts(reads, DB, mc.cores = 1) 
+pathCounts(reads, DB, mc.cores = 1, verbose=FALSE) 
 }
 \arguments{
   \item{reads}{
@@ -21,6 +24,21 @@ pathCounts(reads, DB, mc.cores = 1)
   \item{mc.cores}{
     Number of processors to be used for parallel computing. Requires
     having package \code{multicore} installed and loaded.
+  }
+  \item{verbose}{
+    Set to \code{TRUE} to print progress information.
+  }
+}
+\section{Methods}{
+  \describe{
+    \item{\code{signature(reads='list')}}{
+      Computes counts for exon paths from a list of procBam objects (usually reads
+      processed and split by chromosome).
+    }
+    \item{\code{signature(reads='procBam')}}{
+      Compute counts for exon paths from a procBam object of processed
+      reads.
+    }
   }
 }
 \value{
@@ -41,8 +59,6 @@ pathCounts(reads, DB, mc.cores = 1)
 ##---- Should be DIRECTLY executable !! ----
 ##-- ==>  Define data, use random,
 ##--	or do  help(data=index)  for the standard data sets.
-
-
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

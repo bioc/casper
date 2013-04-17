@@ -251,9 +251,9 @@ Variant* DataFrame::path2Variant(Fragment* f)
 	vector<Exon*>* el = new vector<Exon*>();
 
 	for (itexon= exons.begin(); (*itexon)->id != f->left[0]; itexon++) {
-
+	  
 		ex= (*itexon);
-
+		
 		el->push_back(ex);
 
 	}
@@ -287,7 +287,7 @@ Variant* DataFrame::path2Variant(Fragment* f)
 		el->push_back(ex);
 
 	}
-
+	
 	while ((*itexon)->id != eid) { itexon++; }
 
 	itexon++;

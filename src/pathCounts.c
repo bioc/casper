@@ -32,9 +32,6 @@ SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
     PROTECT(reid = coerceVector(reid, STRSXP));
     nreads=length(rid);
     
-    // Alloc memory for fragments
-    //    frags = malloc(nreads * sizeof(path_t));
-
     hash_init(fragsHashPtr, hashSize);
     hash_init(pathsHashPtr, hashSize);
     
@@ -119,11 +116,11 @@ void countPaths(int pos, path_t *frags, hash_t *pathsHashPtr){
     unrid[totEx]=standex[0][2];
     totEx++;
     for(i=1; i<frags[pos].nexon; i++){
-        if((standex[i][0] != standex[i-1][0])||(standex[i][2] != standex[i-1][2])) {
-            unex[totEx]=standex[i][1];
-            unrid[totEx]=standex[i][2];
-            totEx++;
-        }
+      if((standex[i][0] != standex[i-1][0])||(standex[i][2] != standex[i-1][2])) {
+	unex[totEx]=standex[i][1];
+	unrid[totEx]=standex[i][2];
+	totEx++;
+      }
     }
     
     addPath(unex, unrid, pathsHashPtr, totEx);
@@ -142,10 +139,9 @@ void addPath(int *unex, int *unrid, hash_t *hash, int totEx){
     pastr=malloc((totEx+1)*50 * sizeof(char));
     verbose=0;
     //Check for overlapping ends
-    int nleft=0, nright=0, *lread, *rread, *nrread;
-    lread=malloc(totEx * sizeof(int));
-    rread=malloc(totEx * sizeof(int));
-    nrread=malloc(totEx * sizeof(int));
+    int nleft=0, nright=0, *lread, *rread;
+    lread=malloc((totEx+1) * sizeof(int));
+    rread=malloc((totEx+1) * sizeof(int));
     for(l=0; l<totEx; l++){
       if(unrid[l]==1) {
 	lread[nleft]=unex[l];
@@ -183,6 +179,8 @@ void addPath(int *unex, int *unrid, hash_t *hash, int totEx){
     else {
         hash_insert(hash, pastr, 1); 
     }
+    free(lread);
+    free(rread);
     free(tmp);
     free(pastr);  
 }

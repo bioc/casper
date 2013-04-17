@@ -22,7 +22,6 @@ void addExon2Frag(int exon, int start, int rid, int pos, path_t *frags, int firs
   }
   else {
   if((frags[pos].nexon % exonNum)==0) {
-    Rprintf("Reallocating %d %d\n", frags[pos].nexon, frags[pos].nexon+exonNum);
         newexons = realloc(frags[pos].exons, (frags[pos].nexon + exonNum) * sizeof(int));
         if(newexons != NULL) frags[pos].exons=newexons;
 	else Rprintf("Error reallocating memory\n");

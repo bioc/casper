@@ -38,10 +38,10 @@ firstBamReads <- function(bam, nreads) {
   return(bam)
 }
 
-getDistrs<-function(DB, bam, nreads=4*10^6){
+getDistrs<-function(DB, bam, islandid=NULL, verbose=FALSE, nreads=4*10^6){
   
   #Format exons as RangedData
-  cat("Calculating fragment length distribution\n")
+  if(verbose) cat("Calculating fragment length distribution\n")
 
   exonsRD <- DB@exonsNI  
   #Select a sample of reads
@@ -81,19 +81,24 @@ getDistrs<-function(DB, bam, nreads=4*10^6){
   n <- levels(seqnames(frags))[levels(seqnames(frags)) %in% levels(seqnames(exonsRD))]
   fragsL<-frags[levels(seqnames(frags)) %in% n]
   over <- suppressWarnings(findOverlaps(fragsL, subset(exonsRD, width(exonsRD)>1000), type="within"))
-  ld<-table(width(frags)[queryHits(over)])
+  ld<-table(width(fragsL)[queryHits(over)])
   ld <- ld[ld/sum(ld) > 0.0001]
+ 
+    
   
 
   #Find fragment start distribution for fragments aligning to transcripts in genes with only one annotated tx
 
-  cat("Calculating fragment start distribution\n")
-  sel <- unlist(lapply(DB@transcripts, length))==1
+  if(verbose) cat("Calculating fragment start distribution\n")
+  if(is.null(islandid)){
+    sel <- unlist(lapply(DB@transcripts, length))==1
+  } else sel= islandid
   oneTx <- DB@transcripts[sel]
   oneTx <- unlist(oneTx, recursive=F)
   names(oneTx) <- sub("[0-9]+\\.", "", names(oneTx))
   oneExons <- exonsRD[names(exonsRD) %in% unlist(oneTx)]
   oneExons <- oneExons[as.character(unlist(oneTx))]
+  
   islandStrand <- as.character(strand(DB@islands@unlistData))[cumsum(c(1, elementLengths(DB@islands)[-length(DB@islands)]))]
   names(islandStrand) <- names(DB@islands)
   
@@ -123,7 +128,7 @@ getDistrs<-function(DB, bam, nreads=4*10^6){
   sel <- str=='+';  stDis[sel] <- (exstnogap[sel]+readst[sel]-exst[sel])/txlength[sel]
   sel <- str=='-'; stDis[sel] <- (exstnogap[sel]+exen[sel]-readen[sel])/txlength[sel]
 
-  stDis <- startDist(stDis, frlen, txlength)
+   stDis <- startDist(stDis, frlen, txlength)
   new("readDistrs",lenDis=ld,stDis=stDis)
 }
 

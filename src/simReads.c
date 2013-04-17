@@ -18,7 +18,6 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   double *ve, *ldd, *sdv, *sdd;
   FILE *LRFILE=NULL;
   SEXP startsTmp;
-
   PROTECT(gene_exp = coerceVector(gene_exp, INTSXP));
   PROTECT(var_exp = coerceVector(var_exp, REALSXP));
   PROTECT(var_num = coerceVector(var_num, INTSXP));
@@ -62,7 +61,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   gene_t *genes;
   genes = malloc((ngenes+1) * sizeof(gene_t));
   build_genes(genes, ve, vn, vl, en, es, ee, ei, txstr, ngenes, chr);
-
+  
   int gene, var, len, *gansS, *vansS, *lansS, *strS, seed=INTEGER(rseed)[0], *pos, st;
   double *sansS;
   srand(seed);
@@ -93,7 +92,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   sansS = REAL(sans);
   strS = INTEGER(strs);
   pos = INTEGER(posr);
-
+  
    if(bam==1) LRFILE = fopen(CHAR(STRING_ELT(lr_fileR, 0)), "a");
 
 
@@ -103,23 +102,23 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   hash_t *paths, paths_pted;
   PROTECT(startsTmp=allocVector(INTSXP, 3));
   starts = INTEGER(startsTmp);
-
+  
   if(bam==1){
     cigars = malloc(3 * sizeof(char *));
     for(i=0; i<3; i++) cigars[i] = malloc(100 * sizeof(char));
     strcpy(seqstr, seqnuc);
     for (i=0; i<rl-1; i++) strcat(seqstr, seqnuc);
   }
-
+  
   paths = &paths_pted;
   hash_init(paths, NextPow2(n)); 
 
   int l=0, cnt=0;
   char geStr[2], *last;
-
+  
   i=0;
   while(i<n) {
-
+  
     j=0;
     l=0;
     cnt=0;
@@ -132,9 +131,10 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
       cnt++;
       st = choose_st(len, genes[gene].vars[var].len, sdv, sdd, sdlen, genes[gene].vars[var].strand);
       if(st>=0) {
+        
 	if(bam==1){
-	  starts=build_cigar(genes[gene].vars[var], len, st, rl, cigars, genes[gene].vars[var].strand);
-	  if(genes[gene].vars[var].strand==1) vansS[i] = starts[0];
+          starts=build_cigar(genes[gene].vars[var], len, st, rl, cigars, genes[gene].vars[var].strand);
+          if(genes[gene].vars[var].strand==1) vansS[i] = starts[0];
 	  else vansS[i] = starts[1];
 	  if(genes[gene].vars[var].strand == 1) gap = starts[1]-(starts[0]+rl);
 	  else gap = starts[0]-(starts[1]+rl);
@@ -150,10 +150,12 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
 	      }
 	    }
 	  }
-	} 	
+	}
+	
 	build_path(genes[gene].vars[var], len, st, rl, paths, genes[gene].vars[var].strand, starts);
 	if(genes[gene].vars[var].strand==1) vansS[i] = starts[0];
         else vansS[i] = starts[1];
+	
 	if(insideBam==1){
 	  sprintf(tmpchar, "%d.%d", i, var+1); SET_STRING_ELT(qname, i*2, mkChar(tmpchar)); SET_STRING_ELT(qname, i*2+1, mkChar(tmpchar));
 	  SET_STRING_ELT(rname, i*2, mkChar(genes[gene].chr)); SET_STRING_ELT(rname, i*2+1, mkChar(genes[gene].chr));
@@ -163,7 +165,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
 	  SET_STRING_ELT(cigar, i*2, mkChar(cigars[0])); SET_STRING_ELT(cigar, i*2+1, mkChar(cigars[1]));
 	}
 	totp+=starts[2];
-	free(starts);
+	//free(starts);
 	strS[i] = genes[gene].vars[var].strand;
 	gansS[i] = genes[gene].vars[var].len;
 	lansS[i] = len;

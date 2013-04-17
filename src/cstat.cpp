@@ -1731,7 +1731,7 @@ void choldc(double **a, int n, double **aout, bool *posdef) {
 decomposition, A = L * L' . On input, only the upper triangle of a need be given; 
  The Cholesky factor L is returned in the lower triangle of aout (upper-diag elem are set to 0) */
   int i,j,k;
-  double sum, *p;
+  double sum, *p, max_a;
 
   *posdef= true;
   for (i=1;i<=n;i++) { for (j=i;j<=n;j++) { aout[i][j]= a[i][j]; } }  //copy a into aout
@@ -1742,7 +1742,10 @@ decomposition, A = L * L' . On input, only the upper triangle of a need be given
       if (i == j) {
 	if (sum <= 0.0) *posdef= false;
 	aout[i][i]=sqrt(sum);
-      } else aout[j][i]=sum/aout[i][i];
+      } else {
+	max_a=max_xy(aout[i][j], 1e-10);
+	aout[j][i]=sum/max_a;
+      }
     }
   }
   free_dvector(p,1,n);
@@ -1769,13 +1772,15 @@ void cholS_inv(double **cholS, int n, double **cholSinv) {
 void choldc_inv_internal(double **cholS, int n) {
   /*Computes inverse of Cholesky matrix cholS and stores the result in cholS*/
   int i,j,k;
-  double sum;
+  double sum, max_a;
   for (i=1;i<=n;i++) {
-    cholS[i][i]=1.0/cholS[i][i];
+    max_a=max_xy(cholS[i][i], 1e-10);
+    cholS[i][i]=1.0/max_a;
     for (j=i+1;j<=n;j++) {
       sum=0.0;
       for (k=i;k<j;k++) sum -= cholS[j][k]*cholS[k][i];
-      cholS[j][i]=sum/cholS[j][j];
+      max_a=max_xy(cholS[j][j], 1e-10);
+      cholS[j][i]=sum/max_a;
     }
   }
 }

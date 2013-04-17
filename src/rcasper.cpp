@@ -302,7 +302,6 @@ void importTranscripts(set<Variant*, VariantCmp> *initvars, DataFrame* df, SEXP 
 
 		v->id= i;
 
-		v->antisense=FALSE;
 
 		if((tvals[0] > tvals[1]) && strand==0) v->antisense=TRUE;
 
@@ -898,8 +897,8 @@ extern "C"
 	// - niter: number of mcmc iterations
 
 	// - exactMarginal: set to 0 to estimate post prob from proportion of MCMC visits; set to 1 to use marginal likelihoods of MCMC visited models
-
-
+ 
+   
 
 	  int  selBest = INTEGER(selectBest)[0], method= INTEGER(methodR)[0], niter= INTEGER(niterR)[0];
 

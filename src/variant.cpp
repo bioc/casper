@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "variant.h"
 #include "cppmemory.h"
-
+#include <Rinternals.h>
 
 
 Variant::Variant(vector<Exon*>* exons)
@@ -68,7 +68,9 @@ Variant::Variant(vector<Exon*>* exons)
 
 		this->positions[i + 1] = this->positions[i] + exon->length;
 
-
+		//--- Variants have by default same strand as island. This must be changed for variants in islands with mixed strands. 
+		//--- The case for known variants is solved in the importDataFrame function
+		this->antisense = FALSE;
 
 		/*int j = exon->num;
 

@@ -33,7 +33,7 @@ SEXP joinExons(SEXP sexons, SEXP sreads, SEXP stot){
 
 
   links=malloc((tot+1) * sizeof(int *));
-  for(i=0; i<tot; i++) links[i] = malloc(100 * sizeof(int));
+  for(i=0; i<tot; i++) links[i] = malloc(50 * sizeof(int));
 
   int counter=0;
 
@@ -43,13 +43,15 @@ SEXP joinExons(SEXP sexons, SEXP sreads, SEXP stot){
     l=hash_lookup(myhashP, id);
     if(l!=HASH_FAIL) {
       links[l][0]++;
+      if(links[l][0] % 49 == 0) links[l] = realloc(links[l], (links[l][0]+50) * sizeof(int)); 
       links[l][links[l][0]] = exons[i];
-    }
+   }
     else {
       hash_insert(myhashP, id, counter);
       links[counter][0] = 1;
       links[counter][1] = exons[i];
       counter++;
+      if(counter>=tot) break;
     }
   }
 
@@ -84,7 +86,7 @@ SEXP joinExons(SEXP sexons, SEXP sreads, SEXP stot){
     }
   }
   finalSize=j;
-
+ 
   int *tmpcounts, *pcounts;
   tmpcounts = malloc(finalSize * sizeof(int));
   char **tmpkey;
@@ -106,7 +108,7 @@ SEXP joinExons(SEXP sexons, SEXP sreads, SEXP stot){
     }
   }
   int ksize=j;
-  
+ 
   SEXP res;
   SEXP keys;
   SEXP counts;
@@ -125,7 +127,7 @@ SEXP joinExons(SEXP sexons, SEXP sreads, SEXP stot){
   for(i=0; i<finalSize; i++) free(ans[i]);
   for(i=0; i<ksize; i++) free(tmpkey[i]);
   for(i=0; i<tot; i++) free(links[i]);
-
+  
   free(ans);
   free(links);
   free(tmpcounts);

@@ -7,9 +7,9 @@ setClass("procBam", representation(pbam = "GRanges", junx="GRanges", stranded = 
 setMethod("show", signature(object="procBam"), function(object) {
   cat("procBam object created from",ifelse(object@stranded,"stranded","non-stranded"),"reads\n")
   if(object@stranded) {
-    cat("Contains",length(object@plus),"ranges in the positive strand corresponding to",length(unique(values(object@plus)$id)),"unique read pairs\n")
-    cat("and",length(object@minus),"ranges in the negative strand corresponding to",length(unique(values(object@minus)$id)),"unique read pairs\n")
-  } else cat("Contains",length(object@pbam),"ranges corresponding to",length(unique(values(object@pbam)$id)),"unique read pairs\n")
+    cat("Contains",length(object@plus),"ranges in the positive strand corresponding to",length(unique(names(object@plus))),"unique read pairs\n")
+    cat("and",length(object@minus),"ranges in the negative strand corresponding to",length(unique(names(object@minus))),"unique read pairs\n")
+  } else cat("Contains",length(object@pbam),"ranges corresponding to",length(unique(names(object@pbam))),"unique read pairs\n")
 }
           )
 
@@ -110,7 +110,7 @@ setMethod("show", signature(object="pathCounts"), function(object) {
 ###############################################################
 
 
-setClass("annotatedGenome", representation(islands = "GRangesList", transcripts = "list", exon2island = "data.frame", exonsNI="GRanges",  aliases="data.frame", genomeVersion="character", dateCreated="Date", denovo="logical"))
+setClass("annotatedGenome", representation(islands = "GRangesList", transcripts = "list", exon2island = "data.frame", exonsNI="GRanges",  aliases="data.frame", genomeVersion="character", dateCreated="Date", txLength="numeric", denovo="logical"))
 valid_annotatedGenome <- function(object) {
   msg <- NULL
   if (!(all(c('seqnames','start','end','width','island') %in% names(object@exon2island)))) msg <- "Incorrect column names in 'exon2island'"

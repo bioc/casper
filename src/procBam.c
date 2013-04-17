@@ -9,7 +9,7 @@
 #include "functions.h"
 
 
-SEXP procBam(SEXP qname, SEXP flags, SEXP chr, SEXP start, SEXP cigar, SEXP strand, SEXP totFrags, SEXP totReads, SEXP totJunx, SEXP len, SEXP strs, SEXP flag, SEXP key, SEXP chrom, SEXP rid, SEXP rstrand, SEXP jchrom, SEXP jstrs, SEXP jlen){
+SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP cigar, SEXP strand, SEXP totFrags, SEXP totReads, SEXP totJunx, SEXP len, SEXP strs, SEXP key, SEXP chrom, SEXP rid, SEXP rstrand, SEXP jchrom, SEXP jstrs, SEXP jlen){
 	read_t *frags;
 	int totF, j, l, hashSize, i, *frags_size, *reads_size;
 	hash_t *fragsHashPtr, fragsHash;
@@ -27,8 +27,6 @@ SEXP procBam(SEXP qname, SEXP flags, SEXP chr, SEXP start, SEXP cigar, SEXP stra
 	hash_init(fragsHashPtr, hashSize);
     
 	PROTECT(qname = coerceVector(qname, STRSXP));
-	PROTECT(flags = coerceVector(flags, INTSXP));
-	int *p_flags=INTEGER(flags);
 	PROTECT(chr = coerceVector(chr, STRSXP));
 	PROTECT(start = coerceVector(start, INTSXP));
 	int *p_start=INTEGER(start);
@@ -43,11 +41,11 @@ SEXP procBam(SEXP qname, SEXP flags, SEXP chr, SEXP start, SEXP cigar, SEXP stra
 	for (i=0; i<frags_size[0]; i++) {
    	  l=hash_lookup(fragsHashPtr, CHAR(STRING_ELT(qname, i)));
 	  if(l!=HASH_FAIL) {
-            addRead2Frag(CHAR(STRING_ELT(qname, i)), p_flags[i], CHAR(STRING_ELT(chr, i)), p_start[i], p_strand[i], CHAR(STRING_ELT(cigar, i)), l, frags, 2);
+            addRead2Frag(CHAR(STRING_ELT(qname, i)), CHAR(STRING_ELT(chr, i)), p_start[i], p_strand[i], CHAR(STRING_ELT(cigar, i)), l, frags, 2);
 	  }
 	  else {
             hash_insert(fragsHashPtr, CHAR(STRING_ELT(qname, i)), totF);
-            addRead2Frag(CHAR(STRING_ELT(qname, i)), p_flags[i], CHAR(STRING_ELT(chr, i)), p_start[i], p_strand[i], CHAR(STRING_ELT(cigar, i)), totF, frags, 1);
+            addRead2Frag(CHAR(STRING_ELT(qname, i)), CHAR(STRING_ELT(chr, i)), p_start[i], p_strand[i], CHAR(STRING_ELT(cigar, i)), totF, frags, 1);
             totF++;
 	  }
 	}
@@ -59,9 +57,6 @@ SEXP procBam(SEXP qname, SEXP flags, SEXP chr, SEXP start, SEXP cigar, SEXP stra
 	int *p_len=INTEGER(len);
 	PROTECT(jlen = coerceVector(jlen, INTSXP));
         int *p_jlen=INTEGER(jlen);
-
-	PROTECT(flag = coerceVector(flag, INTSXP));
-	int *p_flag=INTEGER(flag);
 
 	PROTECT(chrom = coerceVector(chrom, STRSXP));
 	PROTECT(jchrom = coerceVector(jchrom, STRSXP));
@@ -94,7 +89,6 @@ SEXP procBam(SEXP qname, SEXP flags, SEXP chr, SEXP start, SEXP cigar, SEXP stra
 		    SET_STRING_ELT(chrom, counter, mkChar(frags[tmp].chr_1));
 		    p_strs[counter] = frags[tmp].len_1;
 		    p_len[counter] = frags[tmp].len_1+(cigs[j]-1);
-		    p_flag[counter] = frags[tmp].flag_1;
 		    p_rid[counter] = 1;
 		    p_rstrand[counter] = frags[tmp].strand_1;
 		    frags[tmp].len_1 += cigs[j];
@@ -120,7 +114,6 @@ SEXP procBam(SEXP qname, SEXP flags, SEXP chr, SEXP start, SEXP cigar, SEXP stra
 		    SET_STRING_ELT(chrom, counter, mkChar(frags[tmp].chr_2));
 		    p_strs[counter] = frags[tmp].len_2;
 		    p_len[counter] = frags[tmp].len_2+(cigs[j]-1);
-		    p_flag[counter] = frags[tmp].flag_2;
 		    p_rid[counter] = 2;
 		    p_rstrand[counter] = frags[tmp].strand_2;
 		    frags[tmp].len_2+=cigs[j];
@@ -147,19 +140,18 @@ SEXP procBam(SEXP qname, SEXP flags, SEXP chr, SEXP start, SEXP cigar, SEXP stra
 	  }
 	}
 	SEXP reads;
-	PROTECT(reads = allocVector(VECSXP, 10));
+	PROTECT(reads = allocVector(VECSXP, 9));
 	SET_VECTOR_ELT(reads, 0, len);
 	SET_VECTOR_ELT(reads, 1, strs);
-	SET_VECTOR_ELT(reads, 2, flag);
-	SET_VECTOR_ELT(reads, 3, key);
-	SET_VECTOR_ELT(reads, 4, chrom);
-	SET_VECTOR_ELT(reads, 5, rid);
-	SET_VECTOR_ELT(reads, 6, rstrand);
-	SET_VECTOR_ELT(reads, 7, jchrom);
-        SET_VECTOR_ELT(reads, 8, jstrs);
-        SET_VECTOR_ELT(reads, 9, jlen);
+	SET_VECTOR_ELT(reads, 2, key);
+	SET_VECTOR_ELT(reads, 3, chrom);
+	SET_VECTOR_ELT(reads, 4, rid);
+	SET_VECTOR_ELT(reads, 5, rstrand);
+	SET_VECTOR_ELT(reads, 6, jchrom);
+        SET_VECTOR_ELT(reads, 7, jstrs);
+        SET_VECTOR_ELT(reads, 8, jlen);
 	free(frags);
 	hash_destroy(fragsHashPtr);
-	UNPROTECT(19);
+	UNPROTECT(17);
 	return(reads);
 }

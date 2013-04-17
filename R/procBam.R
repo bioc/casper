@@ -1,7 +1,16 @@
 require(methods)
 
-setGeneric("subsetPbam", function(pbam, strand) standardGeneric("subsetPbam"))
-setMethod("subsetPbam", signature(pbam="procBam", strand="character"),
+#setGeneric("wrapKnown", function(bamFile, mc.cores) standardGeneric("wrapKnown"))
+#setMethod("wrapKnown", signature(bamFile='character', mc.cores='missing'), function(bamFile, mc.cores){
+  
+
+ # setMethod("wrapKnown", signature(bamFile='character', mc.cores='numeric'), function(bamFile, mc.cores){
+  
+          
+
+
+setGeneric("subsetPbam", function(pbam, strand, chr) standardGeneric("subsetPbam"))
+setMethod("subsetPbam", signature(pbam="procBam", strand="character", chr='missing'),
           function(pbam, strand) {
             if(strand=="+") {
               pbam@pbam <- pbam@plus
@@ -13,6 +22,17 @@ setMethod("subsetPbam", signature(pbam="procBam", strand="character"),
             pbam
           }
           )
+setMethod("subsetPbam", signature(pbam='procBam', strand='missing', chr='character'),
+          function(pbam, chr) {
+            pans <- pbam@pbam[seqnames(pbam@pbam) %in% chr]
+            names(pans) <- names(pbam@pbam)[as.character(seqnames(pbam@pbam)) %in% chr]
+            jans <- pbam@junx[seqnames(pbam@junx) %in% chr]
+            names(jans) <- names(pbam@junx)[as.character(seqnames(pbam@junx)) %in% chr]
+            pbam@pbam <- pans
+            pbam@junx <- jans
+            pbam
+          }
+          )
 
 
 buildRD<-function(reads){
@@ -21,11 +41,13 @@ buildRD<-function(reads){
   st[sel] <- reads$end[sel]; st[!sel] <- reads$start[!sel]
   en[!sel] <- reads$end[!sel]; en[sel] <- reads$start[sel]
   if(sum(grepl("chr", unique(reads$chrom)))>0) {
-    reads<-GRanges(ranges=IRanges(start=st, end=en), seqnames=reads$chrom, id=reads$key, flag=reads$flag, rid=reads$rid, strand=reads$rstrand, XS=reads$strand)
+    ans<-GRanges(ranges=IRanges(start=st, end=en), seqnames=reads$chrom, rid=reads$rid, strand=reads$rstrand, XS=Rle(reads$strand))
+    names(ans) <- reads$key
   } else {
-    reads<-GRanges(ranges=IRanges(start=st, end=en), seqnames=paste("chr", reads$chrom, sep=""), id=reads$key, flag=reads$flag, rid=reads$rid, strand=reads$rstrand, XS=reads$strand)
+    ans<-GRanges(ranges=IRanges(start=st, end=en), seqnames=paste("chr", reads$chrom, sep=""), rid=reads$rid, strand=reads$rstrand, XS=Rle(reads$strand))
+    names(ans) <- reads$key
   }
-  return(reads)
+  return(ans)
 }
 
 uniquifyQname<-function(bam, seed=1){   	
@@ -75,7 +97,6 @@ procB <- function(bam, strnd, seed=1, verbose=FALSE){
 
   if(verbose) cat("done.\nProcessing cigars and building read's object...\n")
   len=vector(mode="integer", length=nreads)
-  flag=vector(mode="integer", length=nreads)
   strs=vector(mode="integer", length=nreads)
   rid=vector(mode="integer", length=nreads)
   key=vector(mode="character", length=nreads)
@@ -84,21 +105,33 @@ procB <- function(bam, strnd, seed=1, verbose=FALSE){
   jchrom=vector(mode="character", length=njunx)
   jstrs=vector(mode="integer", length=njunx)
   jlen=vector(mode="integer", length=njunx)
-  data<-.Call("procBam", bam$qname, bam$flag,  bam$rname, bam$pos, bam$cigar, as.numeric(bam$strand), length(bam$pos), nreads, njunx, len, strs, flag, key, chrom, rid, strand, jchrom, jstrs, jlen)
-  names(data) <- c('end', 'start', 'flag', 'key', 'chrom', 'rid', 'rstrand', 'jchrom', 'jstart', 'jend')
-  junx <- GRanges(ranges=IRanges(start=data$jstart[data$jstart!=0], end=data$jend[data$jstart!=0]), seqnames=data$jchrom[data$jstart!=0], XS=rep(strnd, sum(data$jstart!=0)))
-  if(!is.null(lev)) data[[7]] <- lev[data[[7]]]
+  data<-.Call("procBam", bam$qname, bam$rname, bam$pos, bam$cigar, as.numeric(bam$strand), length(bam$pos), nreads, njunx, len, strs, key, chrom, rid, strand, jchrom, jstrs, jlen)
+  names(data) <- c('end', 'start', 'key', 'chrom', 'rid', 'rstrand', 'jchrom', 'jstart', 'jend')
+  junx <- GRanges(ranges=IRanges(start=data$jstart[data$jstart!=0], end=data$jend[data$jstart!=0]), seqnames=data$jchrom[data$jstart!=0], XS=Rle(rep(strnd, sum(data$jstart!=0))))
+  junx <- lapply(unique(as.character(seqnames(junx))), function(x){
+    if(sum(seqnames(junx)==x)){
+      y <- junx[seqnames(junx) == x]
+      z <- paste(start(y), end(y), sep='.')
+      zz <- table(z)
+      jst <- strsplit(names(zz), split='.', fixed=T)
+      jend <- as.numeric(sapply(jst, '[', 2))
+      jst <- as.numeric(sapply(jst, '[', 1))
+      GRanges(IRanges(jst, jend), seqnames=x, counts=as.numeric(zz))
+    }
+  })
+  junx <- mergeGRanges(junx)
+  if(!is.null(lev)) data[[6]] <- lev[data[[6]]]
   sel<-data[[1]]!=0 & !is.na(data[[3]])
   data<-lapply(data, "[", sel)
   data[[length(data)+1]] <- rep(strnd, length(data[[1]]))
   names(data)[length(data)] <- 'strand'
   if(verbose) cat("done.\n")
   ans<-buildRD(data)
-  id <- values(ans)$id
+  id <- names(ans)
   idnum <- rep(0,length(id))
   idnum[which(id[-length(id)] != id[-1])+1] <- 1
   idnum <- cumsum(idnum)
-  values(ans)$id <- idnum
+  names(ans) <- idnum
   list(pbam=ans, junx=junx)
 }
 
@@ -129,36 +162,46 @@ setMethod("procBam", signature(bam='list',stranded='logical',seed='integer', ver
               ans <- procBamF(bam=bam, stranded=stranded, seed=seed, verbose=verbose)
             } else {
               ans <- lapply(bam, function(x) procBamF(bam=x, stranded=stranded, seed=seed, verbose=verbose))
-              ans <- mergePbam(ans, stranded)
-              lens <- seqnames(ans@pbam)@lengths
-              fix <- rep(c(0, (values(ans@pbam)$id[cumsum(lens)]+1)), c(seqnames(ans@pbam)@lengths, 0))
-              values(ans@pbam)$id <- values(ans@pbam)$id+fix
+              if(length(ans)>1) {
+                ans <- mergePbam(ans, fixNames=TRUE)
+                lens <- seqnames(ans@pbam)@lengths
+                fix <- rep(c(0, (as.numeric(names(ans@pbam)[cumsum(lens)])+1)), c(seqnames(ans@pbam)@lengths, 0))
+                names(ans@pbam) <- as.numeric(names(ans@pbam))+fix
+              }
             }
             ans
           }
             )
 
-mergeGRanges <- function(gr) {
-   values <- do.call('rbind',unname(lapply(gr, values)))
-   colnames(values) <- sub("values.", "", colnames(values))
-   seqn <- unlist(RleList(unname(lapply(gr, seqnames))))
-   ranges <- unlist(IRangesList(lapply(gr, ranges)))
-   ans <- GRanges(ranges=ranges, seqnames=seqn)
-   values(ans) <- values
-   unname(ans)
- }
+mergeGRanges <- function(gr, fixNames=FALSE) {
+  values <- do.call('rbind',unname(lapply(gr, values)))
+  colnames(values) <- sub("values.", "", colnames(values))
+  seqn <- unlist(RleList(unname(lapply(gr, seqnames))))
+  ranges <- unlist(IRangesList(lapply(gr, ranges)))
+  ans <- GRanges(ranges=ranges, seqnames=seqn)
+  names(ans) <- unlist(sapply(gr, names))
+  if(fixNames){
+    lens <- sapply(gr, length)
+    lens <- rep(c(0, lens[-length(lens)]), lens)
+    n <- as.numeric(names(ans))+lens
+    names(ans) <- n
+  }
+  values(ans) <- values
+  ans
+}
 
-mergePbam <- function(ans, stranded){
-  if(stranded){
-    plus <- mergeGRanges(lapply(ans, function(x) slot(x, 'plus')))
-    minus <- mergeGRanges(lapply(ans, function(x) slot(x, 'minus')))
-    pjunx <- mergeGRanges(lapply(ans, function(x) slot(x, 'pjunx')))
-    mjunx <- mergeGRanges(lapply(ans, function(x) slot(x, 'mjunx')))
-    new("procBam", pbam=NULL, plus=plus, minus=minus,junx=NULL, pjunx=pjunx, mjunx=mjunx, stranded=ans$stranded)
+mergePbam <- function(ans, fixNames=FALSE){
+  if(!all(sapply(ans, function(x) x@stranded)) & sum(sapply(ans, function(x) x@stranded))!=0) stop("all pbams must be either stranded or non-stranded")
+  if(ans[[1]]@stranded){
+    plus <- casper:::mergeGRanges(lapply(ans, function(x) slot(x, 'plus')), fixNames)
+    minus <- casper:::mergeGRanges(lapply(ans, function(x) slot(x, 'minus')), fixNames)
+    pjunx <- casper:::mergeGRanges(lapply(ans, function(x) slot(x, 'pjunx')), fixNames)
+    mjunx <- casper:::mergeGRanges(lapply(ans, function(x) slot(x, 'mjunx')), fixNames)
+    new("procBam", pbam=NULL, plus=plus, minus=minus,junx=NULL, pjunx=pjunx, mjunx=mjunx, stranded=ans[[1]]@stranded)
   } else{
-    pbam <- mergeGRanges(lapply(ans, function(x) slot(x, 'pbam')))
-    junx <- mergeGRanges(lapply(ans, function(x) slot(x, 'junx')))
-    ans <- new("procBam",pbam=pbam, junx=junx,stranded=stranded)
+    pbam <- mergeGRanges(lapply(ans, function(x) slot(x, 'pbam')), fixNames)
+    junx <- mergeGRanges(lapply(ans, function(x) slot(x, 'junx')), fixNames)
+    ans <- new("procBam",pbam=pbam, junx=junx,stranded=ans[[1]]@stranded)
   }
   ans
 }
