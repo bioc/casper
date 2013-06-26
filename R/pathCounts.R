@@ -11,13 +11,13 @@ setMethod("getNreads",signature(pc='pathCounts'),function(pc) {
           )
 
 mergePC <- function(pc, DB){
-  tmp <- vector(mode='list', length=length(pc[[1]]@counts[[1]]))
+  tmp <- vector(mode='list', length=length(names(DB@transcripts)))
   names(tmp) <- names(DB@transcripts)
   for(x in 1:length(pc)){
     y <- pc[[x]]@counts[[1]]
     sel <- names(y)[unlist(lapply(y, length)>0)]
     tmp[sel] <- y[sel]
-  }
+  }  
   pc <- new("pathCounts", counts=list(tmp), stranded=pc[[1]]@stranded, denovo=pc[[1]]@denovo)
   pc
 }
@@ -29,12 +29,17 @@ procPaths <- function(reads, DB, mc.cores, verbose){
     over<-findOverlaps(reads, DB@exonsNI)    
     if("id" %in% colnames(values(reads))) {
       readid<-values(reads)$id[queryHits(over)]
-    } else readid<-as.integer(names(reads)[queryHits(over)])
+    } else if("names" %in% colnames(values(reads))) {
+      readid<-values(reads)$names[queryHits(over)]
+    } else readid <- as.integer(names(reads)[queryHits(over)])
     readside<-values(reads)$rid[queryHits(over)]
-    exid <- names(DB@exonsNI)[subjectHits(over)]
+    exid <- as.integer(names(DB@exonsNI)[subjectHits(over)])
     exst<-start(DB@exonsNI)[subjectHits(over)]
     if(verbose) cat("Counting paths\n")
+    rm(over)
+    gc()
     pCounts<-.Call("pathCounts", readid, readside, exst, exid)
+    rm(readid, readside, exst, exid)
     pCounts<-lapply(pCounts[1:2], function(x) x[1:pCounts[[3]]])
     names(pCounts[[2]])<-pCounts[[1]]
     pCounts<-pCounts[[2]]
@@ -58,8 +63,8 @@ procPaths <- function(reads, DB, mc.cores, verbose){
       sel <- sapply(sel, "[", -1)
       tmp <- split(sel, isl)
       if(mc.cores>1) {
-        require(multicore)
-        tmp1 <- multicore::mclapply(names(tmp), function(x){
+        require(parallel)
+        tmp1 <- parallel::mclapply(names(tmp), function(x){
           n <- sapply(tmp[[x]], length)
           nn <- unlist(tmp[[x]])
           names(nn) <- rep(names(splCounts[[x]]), n)
@@ -104,7 +109,7 @@ setMethod("pathCounts", signature(reads='procBam'), function(reads, DB, mc.cores
   ans
 })
 setMethod("pathCounts", signature(reads='list'), function(reads, DB, mc.cores, verbose) {
-  ans <- mclapply(reads, function(x) pathCounts(x, DB=DB, mc.cores=1, verbose=verbose), mc.cores=mc.cores)
+  ans <- mclapply(reads, function(x) pathCounts(x, DB=DB, mc.cores=1, verbose=verbose), mc.cores=mc.cores, mc.preschedulle=TRUE)
   mergePC(pc=ans, DB=DB)
 })
           

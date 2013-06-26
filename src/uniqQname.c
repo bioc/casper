@@ -9,17 +9,18 @@
 
 SEXP uniqQname(SEXP qname, SEXP totReadsR, SEXP pos, SEXP mpos, SEXP names){
 
-  int totReads, hashSize, i, l, count=0;
+  int totReads, hashSize, i, l, count=0, *qname_p;
   hash_t *hashP, myhash;
-  PROTECT(totReadsR = coerceVector(totReadsR, INTSXP));
+  PROTECT(totReadsR);
   totReads=INTEGER(totReadsR)[0];
   hashP = &myhash;
   hashSize=(int)(totReads/2);
   hash_init(hashP, hashSize);
-  PROTECT(qname = coerceVector(qname, STRSXP));
-  PROTECT(pos = coerceVector(pos, INTSXP));
+  PROTECT(qname);
+  PROTECT(pos);
   int *p_pos=INTEGER(pos);
-  PROTECT(mpos = coerceVector(mpos, INTSXP));
+  qname_p=INTEGER(qname);
+  PROTECT(mpos);
   int *p_mpos=INTEGER(mpos);   
 
 //vector to return new read ids
@@ -30,10 +31,11 @@ SEXP uniqQname(SEXP qname, SEXP totReadsR, SEXP pos, SEXP mpos, SEXP names){
   for (i=0; i<floor(totReads/2); i++) tmpres[i] = malloc(200 * sizeof(char));
 
   char *tmp, *idtmp;
-  tmp = malloc(200 * sizeof(char));
-  idtmp = malloc(30 * sizeof(char));
+  tmp = malloc(200 * sizeof(int));
+  idtmp = malloc(30 * sizeof(int));
   for (i=0; i<totReads; i++) {
-    strcpy(tmp,CHAR(STRING_ELT(qname, i)));
+    //strcpy(tmp,CHAR(STRING_ELT(qname, i)));
+    sprintf(tmp, "%d", qname_p[i]);
     strcat(tmp, ".");
     if(p_pos[i]<p_mpos[i]) sprintf(idtmp, "%d",  p_pos[i]);
     else sprintf(idtmp, "%d",  p_mpos[i]);

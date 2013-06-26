@@ -81,7 +81,7 @@ Camille Stephan-Otto Attolini
 \examples{
 data(hg19DB)
 data(K562.r1l1)
-distrs <- getDistrs(hg19DB,bam=K562.r1l1)
+distrs <- getDistrs(hg19DB,bam=K562.r1l1,readLength=75)
 
 islandid <- c('10319','463')
 txs <- unlist(lapply(hg19DB@transcripts[islandid], names))

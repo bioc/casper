@@ -1,11 +1,11 @@
 setGeneric("findNewExons", function(pbam, DB, cov, minConn, minJunx, minLen, mc.cores) standardGeneric("findNewExons"))
 setMethod("findNewExons", signature(pbam='list'),
           function(pbam, DB, cov, minConn, minJunx, minLen, mc.cores) {
-            if(mc.cores>1) require(multicore)
+            if(mc.cores>1) require(parallel)
             if(mc.cores>1) {
-              if ('multicore' %in% loadedNamespaces()) {
-                nex <- multicore::mclapply(pbam, function(x) findNewExons(x, DB=DB, cov=cov, minConn=minConn, minJunx=minJunx, minLen=minLen), mc.cores=mc.cores)
-              } else stop('multicore library has not been loaded!')
+              if ('parallel' %in% loadedNamespaces()) {
+                nex <- parallel::mclapply(pbam, function(x) findNewExons(x, DB=DB, cov=cov, minConn=minConn, minJunx=minJunx, minLen=minLen), mc.cores=mc.cores)
+              } else stop('parallel library has not been loaded!')
             } else {
               nex <- lapply(pbam, function(x) findNewExons(x, DB=DB, cov=cov, minConn=minConn, minJunx=minJunx, minLen=minLen))
             }
@@ -25,7 +25,7 @@ setMethod("findNewExons", signature(pbam='procBam') ,
 setGeneric("assignExons2Gene", function(reads, chrs, ...) standardGeneric("assignExons2Gene"))
 setMethod("assignExons2Gene", signature(chrs='list'),
           function(reads, chrs, mc.cores, DB, ...){
-            ans <- multicore::mclapply(chrs, function(x) assignExons2Gene(reads=reads, DB=DB, chrs=x, mc.cores=mc.cores, ...), mc.cores=mc.cores)
+            ans <- parallel::mclapply(chrs, function(x) assignExons2Gene(reads=reads, DB=DB, chrs=x, mc.cores=mc.cores, ...), mc.cores=mc.cores)
             misschr <- unlist(lapply(ans, function(x) as.character(unique(seqnames(x@exonsNI)))))
             allchr <- as.character(unique(seqnames(DB@exonsNI)))
             misschr <- allchr[!(allchr %in% misschr)]
@@ -75,7 +75,7 @@ findNewExonsF <- function(pbam, cov=NULL, DB, minConn=3, minJunx=3, minLen=12, m
   isl <- slice(cov, lower=1,  rangesOnly=T)
   islcov <- Views(cov, isl[names(cov)])
 
-  cnt <- multicore::mclapply(names(isl), function(chr){
+  cnt <- parallel::mclapply(names(isl), function(chr){
     viewApply(islcov[[chr]], sum)
   }, mc.cores=mc.cores)
   cnt <- unlist(cnt)
@@ -91,7 +91,7 @@ findNewExonsF <- function(pbam, cov=NULL, DB, minConn=3, minJunx=3, minLen=12, m
   isls <- disjoin(isls)
   
   ## Redefine known and new exons by junctions
-  isls <- multicore::mclapply(unique(as.character(seqnames(DB@exonsNI)@values)), function(x){
+  isls <- parallel::mclapply(unique(as.character(seqnames(DB@exonsNI)@values)), function(x){
     if(sum(seqnames(junx)==x)){
       y <- junx[seqnames(junx) == x]
       y <- y[width(y)>3]
@@ -117,7 +117,7 @@ findNewExonsF <- function(pbam, cov=NULL, DB, minConn=3, minJunx=3, minLen=12, m
   ## Find exons to redefine (grow)
   lex <- nisl[!(names(nisl) %in% names(nex))]
   
-  lex <- multicore::mclapply(unique(as.character(seqnames(DB@exonsNI)@values)), function(x){
+  lex <- parallel::mclapply(unique(as.character(seqnames(DB@exonsNI)@values)), function(x){
     junx <- junx[seqnames(junx)==x]
     junx <- junx[width(junx)>5]
     scnt <- tapply(values(junx)$counts, start(junx), sum)

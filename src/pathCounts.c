@@ -17,7 +17,7 @@ void addPath(int *unex, int *unrid, hash_t *hash, int totEx);
 SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
     //void pathCounts(char **reid, int *rid, int *exst, int *exid, int nreads){
     
-    int totF, hashSize, i, *p_rid, *p_exst, *p_exid, nreads;
+  int totF, hashSize, i, *p_rid, *p_exst, *p_exid, nreads, *p_reid;
     hash_node_t *bucket;
     path_t *frags;
     hash_t  *pathsHashPtr, pathsHash, *fragsHashPtr, fragsHash;
@@ -26,10 +26,10 @@ SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
     hashSize=pow(2,25);	
     verbose=0;
 	
-    PROTECT(rid = coerceVector(rid, INTSXP));
-    PROTECT(exst = coerceVector(exst, INTSXP));
-    PROTECT(exid = coerceVector(exid, INTSXP));
-    PROTECT(reid = coerceVector(reid, STRSXP));
+    PROTECT(rid);// = coerceVector(rid, INTSXP));
+    PROTECT(exst);// = coerceVector(exst, INTSXP));
+    PROTECT(exid);// = coerceVector(exid, INTSXP));
+    PROTECT(reid);// = coerceVector(reid, STRSXP));
     nreads=length(rid);
     
     hash_init(fragsHashPtr, hashSize);
@@ -38,9 +38,10 @@ SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
     p_rid=INTEGER(rid);
     p_exst=INTEGER(exst);
     p_exid=INTEGER(exid);
+    p_reid=INTEGER(reid);
     
     path_t **pfrags=&frags;
-    totF = buildFrags(fragsHashPtr, reid, p_rid, p_exst, p_exid, nreads, pfrags);
+    totF = buildFrags(fragsHashPtr, p_reid, p_rid, p_exst, p_exid, nreads, pfrags);
         
     for(i=0; i<fragsHash.size; i++) {
         if(fragsHash.bucket[i]!=NULL)  {
@@ -54,6 +55,7 @@ SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
             }
         }
     }
+    hash_destroy(fragsHashPtr);
     
     SEXP key, pathc, tot;
     PROTECT(key = allocVector(STRSXP, nreads));
@@ -87,7 +89,7 @@ SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
     SET_VECTOR_ELT(ans, 2, tot);
     
     hash_destroy(pathsHashPtr);
-    hash_destroy(fragsHashPtr);
+
     UNPROTECT(8);
     free(frags);
     return(ans);

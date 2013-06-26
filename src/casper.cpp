@@ -651,7 +651,7 @@ void Casper::asymptoticSE(double *se, double *mode, int n) {
   vtGradG(G,thmode, n);
 
 
-
+  
   S= dmatrix(1,n-1,1,n-1); Sinv= dmatrix(1,n-1,1,n-1);
 
   normapprox(Sinv, G, H, mode, thmode, n, Sidx_ini);

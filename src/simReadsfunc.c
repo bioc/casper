@@ -22,7 +22,6 @@ void build_genes(gene_t *genes, double *ve, int *vn, int *vl, int *en, int *es, 
       genes[i].vars[j].exp = ve[varpos];
       genes[i].vars[j].strand = txstr[varpos];
       genes[i].vars[j].exst = malloc((genes[i].vars[j].nex+1) * sizeof(int));
-      genes[i].vars[j].exst = malloc((genes[i].vars[j].nex+1) * sizeof(int));
       genes[i].vars[j].exen = malloc((genes[i].vars[j].nex+1) * sizeof(int));
       genes[i].vars[j].exid = malloc((genes[i].vars[j].nex+1) * sizeof(int));
       for(k=0; k<genes[i].vars[j].nex; k++){

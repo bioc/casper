@@ -28,8 +28,6 @@
     \item{aliases}{\code{data.frame} indicating the aliases for each
       known transcript, i.e. transcripts having the exact same sequence
       of exons (as indicated in the UCSC database).}
-    \item{txLength}{Length of transcripts computed adding exon lengths
-      for each transcript}
     \item{genomeVersion}{Character indicating the genome version from
       which the object was build, e.g. "hg19"}
     \item{dateCreated}{Character indicating the date when the object was
@@ -39,6 +37,7 @@
       object was created using available annotation only. \code{TRUE}
       indicates that new exons/islands were added based on the data
       observed in a particular RNA-seq experiment.}
+    \item{txLength}{Numeric vector storing transcript lengths.}
   }
 }
 \section{Methods}{

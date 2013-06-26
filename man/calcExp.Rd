@@ -64,7 +64,7 @@ pbam0 <- procBam(bam0)
 head(getReads(pbam0))
 
 #Estimate distributions, get path counts
-distrs <- getDistrs(hg19DB,bam=bam0)
+distrs <- getDistrs(hg19DB,bam=bam0,readLength=75)
 pc <- pathCounts(pbam0, DB=hg19DB)
 
 #Get estimates

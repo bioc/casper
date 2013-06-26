@@ -53,8 +53,8 @@ splitPaths <- function(paths, DB, mc.cores, stranded, geneid){
     sel <- lapply(sel, "[", -1)
     tmp <- split(sel, isl)
     if(mc.cores>1) {
-      require(multicore)
-      tmp1 <- multicore:::mclapply(names(tmp), function(x){
+      require(parallel)
+      tmp1 <- parallel:::mclapply(names(tmp), function(x){
         n <- sapply(tmp[[x]], length)
         nn <- unlist(tmp[[x]])
         names(nn) <- rep(names(splCounts[[x]]), n)
@@ -89,22 +89,13 @@ splitPaths <- function(paths, DB, mc.cores, stranded, geneid){
   ans
 }
 
-casperSim <- function(genomeDB, distrs, nSimReads, pis, islandid, lr_file=NULL, rl, chrlen, seed, bam, chr=NULL, verbose=TRUE){
+casperSim <- function(genomeDB, distrs, nSimReads, pis, islandid, lr_file=NULL, rl, chrlen, seed, bam, chr=NULL, verbose=FALSE){
   if (verbose) cat("Formatting input\n")
   sel <- islandid
   nSimReads <- nSimReads[sel]
   txs <- genomeDB@transcripts[sel]
   sel1 <- unlist(lapply(txs, is.null))
   txs <- txs[!sel1]
-  #is <- as.character(strand(genomeDB@islands@unlistData))[cumsum(c(1, elementLengths(genomeDB@islands)[-length(genomeDB@islands)]))]
-  #names(is) <- names(genomeDB@islands)
-  #island_strand <- is[sel][!sel1]
-  #island_strand[island_strand=="+"] <- 1
-  #island_strand[island_strand=="-"] <- -1
-  #island_strand[island_strand=="*"] <- 0
-  #tmp <- names(island_strand)
-  #island_strand <- as.numeric(island_strand)
-  #names(island_strand) <- tmp
   variant_num <- unlist(lapply(txs, length))
   starts <- start(genomeDB@exonsNI)
   names(starts) <- names(genomeDB@exonsNI)
@@ -124,21 +115,21 @@ casperSim <- function(genomeDB, distrs, nSimReads, pis, islandid, lr_file=NULL, 
   variant_len <- tapply(widths, tmps, sum)
   tmptxs <- unlist(txs, recursive=F)
   txs <- unlist(lapply(txs,names))
-  tx_strand <- sapply(tmptxs, function(x) ifelse(x[1]<x[2], 1, -1))
+  tx_strand <- as.integer(sapply(tmptxs, function(x) ifelse(x[1]<x[2], 1, -1)))
   if(!all(txs %in% names(pis))) stop("Wrong pis vector, some transcripts missing")
   if(!all(nSimReads>0)) stop("nSimReads with zero entries")
   ge <- nSimReads[sel]
   ge <- as.integer(rep(0:(length(ge)-1), ge))
   ve=pis[txs]
   vn=variant_num
-  vl=variant_len
+  vl=as.integer(variant_len)
   en=exon_num
   es=exon_st
   ee=exon_end
   ei=exs
   ngenes=length(sel)
-  ldv <- sample(as.numeric(names(distrs@lenDis)), p=distrs@lenDis/sum(distrs@lenDis), size=sum(nSimReads), replace=T)
-  ldd <- as.integer(1)
+  ldv <- sample(as.integer(names(distrs@lenDis)), prob=distrs@lenDis/sum(distrs@lenDis), size=sum(nSimReads), replace=T)
+  ldd <- as.numeric(1)
   th <- seq(0, 1, len=10000)
   std <- distrs@stDis(th)
   std[1] <- 0
@@ -149,7 +140,7 @@ casperSim <- function(genomeDB, distrs, nSimReads, pis, islandid, lr_file=NULL, 
   if (verbose) cat("Simulating fragments\n")
 # insideBam deprecated, only in case it is useful in simulations, return from C all information written to the bam file
   insideBam=integer(0)
-  ans <- .Call("casperSimC", ge, ve, vn, vl, en, es, ee, ei, ldv, ldd, sdv, sdd, rl, length(ge), tx_strand, lr_file, chroms, as.integer(seed), as.integer(bam), as.integer(insideBam))
+  ans <- .Call("casperSimC", ge, ve, vn, as.integer(vl), en, es, ee, ei, ldv, ldd, sdv, sdd, as.integer(rl), length(ge), as.integer(tx_strand), lr_file, chroms, as.integer(seed), as.integer(bam), as.integer(insideBam), as.integer(verbose))
   ans <- ans[1:7]
   names(ans[[7]]) <- ans[[6]]
   ans[[6]] <- NULL

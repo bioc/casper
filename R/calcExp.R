@@ -55,39 +55,37 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
     ans
   }
 
-      #Run
+  #Run
   sel <- !sapply(pc[islandid], is.null)
-    all <- islandid
-    islandid <- islandid[sel]
-  if (verbose) cat("Obtaining expression estimates...\n")
+  all <- islandid
+  islandid <- islandid[sel]
+  sel <- elementLengths(genomeDB@islands[islandid])>1
+  islandid <- islandid[sel]
+  if(length(islandid)>0){
+    if (verbose) cat("Obtaining expression estimates...\n")
     if (mc.cores>1 && length(islandid)>mc.cores) {
-      if ('multicore' %in% loadedNamespaces()) {
+      if ('parallel' %in% loadedNamespaces()) {
                     #split into smaller jobs
         islandid <- split(islandid, cut(1:length(islandid), mc.cores))
-        ans <- multicore::mclapply(islandid,f,mc.cores=mc.cores)
+        ans <- parallel::mclapply(islandid,f,mc.cores=mc.cores, mc.preschedule=FALSE)
         ans <- unlist(ans, recursive=F)
         names(ans) <- unlist(islandid)
-      } else stop('multicore library has not been loaded!')
+      } else stop('parallel library has not been loaded!')
     } else {
       ans <- f(islandid)
       names(ans) <- islandid
     }
+  } else ans <- NULL
 
-  nreads <- rep(0, length(all))
-
-  names(nreads) <- all
-
-  nreads[names(ans)] <- sapply(ans, '[[', length(ans[[1]]))
+  nreads <- unlist(lapply(pc[all], sum))
+  nreads[names(ans)] <- unlist(sapply(ans, '[[', length(ans[[1]])))  #count only reads with positive probability under provided variants
   
-  sel <- sapply(ans, function(z) sum(z[[1]])==0)
-
+  sel <- sapply(ans, function(z) sum(z[[1]])==0) #genes with a single variant
   ans[sel] <- NULL
 
-  miss <- lapply(genomeDB@transcripts[all[!(all %in% names(ans))]], names)
+  miss <- lapply(genomeDB@transcripts[all[!(all %in% names(ans))]], names)  #careful: some genes repeated in miss though they appear only once in transcripts, e.g. '20306' sum(names(miss)=='20306')
 
-  
-  
-    #Format as ExpressionSet
+  #Format as ExpressionSet
 
   if (verbose) cat("Formatting output...\n")
   transcript <- unlist(lapply(ans, function(z) names(z[[1]])))
@@ -97,15 +95,13 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
     transcript <- c(transcript, unname(unlist(miss)))
     gene <- c(gene, rep(names(miss), sapply(miss, length)))
     fdata <- data.frame(transcript=transcript, gene=gene)
-    ntx.miss <- sapply(miss,length) #Added
-    misse <- rep(1/ntx.miss,ntx.miss) #Added: report prior mode for islands with no reads
-    a0 <- rep(priorq*ntx.miss,ntx.miss) #Added
-    missSE <- sqrt(priorq * (a0-priorq) / (a0^2 * (a0+1))) #Added
-    #misse <- rep(NA, length(unlist(miss))) #Removed
+    ntx.miss <- sapply(miss,length) 
+    misse <- rep(1/ntx.miss,ntx.miss) 
+    a0 <- rep(priorq*ntx.miss,ntx.miss) 
+    missSE <- sqrt(priorq * (a0-priorq) / (a0^2 * (a0+1))) 
     names(misse) <- unlist(miss)
     exprsx <- matrix(c(unlist(lapply(ans,'[[',1)), misse) ,ncol=1)
     rownames(exprsx) <- c(unlist(lapply(ans, function(z) names(z[[1]]))), names(misse))
-    #exprsx[exprsx==-1] <- NA #Removed
   } else {
     exprsx <- matrix(unlist(lapply(ans, '[[', 1)), ncol=1)
     rownames(exprsx) <- unlist(lapply(ans, function(z) names(z[[1]])))
@@ -114,8 +110,7 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
     if (citype==1) {
       se <- unlist(lapply(ans,'[[',2))
       if(length(miss)>0) se <- c(se, missSE)
-      #se[se==-1] <- NA #Removed
-      if (!rpkm) { #Added
+      if (!rpkm) {
         alpha <- .05
         fdata$ci95.low <- qnorm(alpha/2,mean=exprsx,sd=se)
         fdata$ci95.high <- qnorm(1-alpha/2,mean=exprsx,sd=se)
@@ -125,20 +120,19 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
         sel <- round(fdata$ci95.high,10)>1 & !is.na(se); fdata$ci95.high[sel] <- 1
         fdata$ci95.low[sel] <- unlist(mapply(function(m,s) casper:::qtnorm(alpha/2,mean=m,sd=s,lower=0,upper=1), as.list(exprsx[sel,1]), as.list(se[sel])))
       }
-      fdata$se <- se #Added: store SE
+      fdata$se <- se
     }
     if (citype==2) {
       if(sum(unlist(lapply(ans, function(x) is.na(x[[3]]))))==0){
         if (mc.cores>1) {
-          if ('multicore' %in% loadedNamespaces()) {
-           se <- unlist(multicore::mclapply(ans, function(z) (colMeans(z[[3]]^2) - colMeans(z[[3]])^2) * nrow(z[[3]])/(nrow(z[[3]]) - 1), mc.cores=mc.cores))
-         } else stop('multicore library has not been loaded!')
+          if ('parallel' %in% loadedNamespaces()) {
+           se <- unlist(parallel::mclapply(ans, function(z) (colMeans(z[[3]]^2) - colMeans(z[[3]])^2) * nrow(z[[3]])/(nrow(z[[3]]) - 1), mc.cores=mc.cores))
+         } else stop('parallel library has not been loaded!')
         } else se <- unlist(lapply(ans, function(z) (colMeans(z[[3]]^2) - colMeans(z[[3]])^2) * nrow(z[[3]])/(nrow(z[[3]]) - 1)))
         
         if(length(miss)>0) se <- c(se, missSE)
-        #fdata$se <- lapply(ans, function(z) (colMeans(z[[3]]^2) - colMeans(z[[3]])^2) * nrow(z)/(nrow(z) - 1)) #Added: store SE
         fdata$se <- se
-        if (!rpkm) { #Added
+        if (!rpkm) {
           q <- lapply(ans,function(z) apply(z[[3]],2,quantile,probs=c(.025,.975)))
           q <- t(do.call(cbind,q))
           if(length(miss)>0) q <- rbind(q, matrix(NA, nrow=length(misse), ncol=2))
@@ -157,33 +151,32 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
         }
       }
     }
-  rownames(exprsx) <- rownames(fdata) <- fdata$transcrips
-  
+  rownames(exprsx) <- rownames(fdata) <- fdata$transcript
+
+  fdata <- cbind(fdata, nreads[as.character(fdata$gene)])
+  colnames(fdata)[ncol(fdata)] <- "explCnts"
+
   #Compute log(RPKM)
   if (rpkm) {
-    if (citype != 0) se.logpi <- fdata$se / exprsx #Added: delta method for Var(log(pi))
+    if (citype != 0) se.logpi <- fdata$se / exprsx
     nreads <- nreads[unique(as.character(fdata$gene))]
-    totReads <- sum(nreads) + priorqGeneExpr*length(nreads) #Modified: totReads includes prior sample size
-    #geneLength <- sum(width(genomeDB@islands[unique(as.character(fdata$gene))])) #Modified: deals with GRanges (faster)
+    totReads <- sum(nreads) + priorqGeneExpr*length(nreads) 
     txLength <- txLength(genomeDB=genomeDB)
-    apost <- (nreads+(priorqGeneExpr-1)) #Added
-    theta <- apost/totReads #Added
-    theta.rpkm <- theta[as.character(fdata$gene)]/(txLength[fdata$transcript]/10^9)  #Modified: assign posterior mode
-    exprsx <- log(exprsx) + log(theta.rpkm) #Added
+    apost <- nreads + (priorqGeneExpr-1)
+    thest <- apost/sum(apost)
+    theta <- data.frame(gene=names(nreads), thest=thest)
+    exprsx <- as.matrix(logrpkm(fdata, th=theta, pi=exprsx, genomeDB=genomeDB))
+    colnames(exprsx) <- NULL
     if (citype != 0) {
-      se.theta <- sqrt(apost * (1-apost/totReads) / (totReads * (totReads+1))) #Added
-      se.logtheta <- se.theta / theta #Added
-      fdata$se <- sqrt(se.logpi^2 + se.logtheta[as.character(fdata$gene)]^2) #Added
-      alpha <- 0.05 #Added
+      se.theta <- sqrt(apost * (1-apost/totReads) / (totReads * (totReads+1))) 
+      se.logtheta <- se.theta / thest
+      fdata$se <- sqrt(se.logpi^2 + se.logtheta[as.character(fdata$gene)]^2)
+      alpha <- 0.05
       err <- qnorm(alpha/2)*fdata$se; fdata$ci95.low <- exprsx + err; fdata$ci95.high <- exprsx - err #Added
     }
   }
   #Return ExpressionSet
 
-  fdata <- cbind(fdata, nreads[as.character(fdata$gene)])
-  colnames(fdata)[ncol(fdata)] <- "explCnts"
-  rownames(fdata) <- fdata$transcript
-  
   fdata <- new("AnnotatedDataFrame",fdata)
   ans <- new("ExpressionSet",exprs=exprsx,featureData=fdata)
   ans
@@ -231,7 +224,7 @@ calcExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
 }
     
 calcKnownMultiple <- function(exons, exonwidth, transcripts, islandid, pc, startcdf, lendis, lenvals, readLength, priorq, strand, citype, niter, burnin, verbose) {
-  ans <- .Call("calcKnownMultiple",exons,exonwidth,transcripts,islandid,pc,startcdf, lendis, lenvals, readLength, priorq, strand, citype, niter, burnin, verbose)
+  ans <- .Call("calcKnownMultiple",exons,exonwidth,transcripts,islandid,pc,startcdf, lendis, lenvals, readLength, priorq, strand, citype, niter, burnin, verbose, PACKAGE="casper")
   return(ans)
 }
 

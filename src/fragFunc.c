@@ -39,19 +39,24 @@ void addExon2Frag(int exon, int start, int rid, int pos, path_t *frags, int firs
   frags[pos].nexon++;		
 }
 
-int buildFrags(hash_t *fragsHashPtr, SEXP reid, int *rid, int *start, int *exon, int nreads, path_t **frags){ 
+//int buildFrags(hash_t *fragsHashPtr, SEXP reid, int *rid, int *start, int *exon, int nreads, path_t **frags){ 
+int buildFrags(hash_t *fragsHashPtr, int *reid, int *rid, int *start, int *exon, int nreads, path_t **frags){ 
   int l=0, totF=0, i, totFnow=1000;
   path_t *newF;
+  char *str;
+  str=malloc(100 * sizeof(char));
 
   *frags = malloc((totFnow + 1) * sizeof(path_t));
 
   for(i=0; i<nreads; i++) {
-    l=hash_lookup(fragsHashPtr, CHAR(STRING_ELT(reid,i)));
+    sprintf(str, "%d", reid[i]);
+    //    l=hash_lookup(fragsHashPtr, CHAR(STRING_ELT(reid,i)));
+    l=hash_lookup(fragsHashPtr, str);
     if(l!=HASH_FAIL) {
       addExon2Frag(exon[i], start[i], rid[i], l, *frags, 2);
     }
     else {
-      hash_insert(fragsHashPtr,  CHAR(STRING_ELT(reid,i)), totF);
+      hash_insert(fragsHashPtr,  str, totF);
       addExon2Frag(exon[i], start[i], rid[i], totF, *frags, 1);
       totF++;
       if(totF==(totFnow-1)){
@@ -62,7 +67,7 @@ int buildFrags(hash_t *fragsHashPtr, SEXP reid, int *rid, int *start, int *exon,
       } 
     }
   }
-
+  free(str);
   return(totF);
 }
 

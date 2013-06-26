@@ -1743,7 +1743,7 @@ decomposition, A = L * L' . On input, only the upper triangle of a need be given
 	if (sum <= 0.0) *posdef= false;
 	aout[i][i]=sqrt(sum);
       } else {
-	max_a=max_xy(aout[i][j], 1e-10);
+	max_a=max_xy(fabs(aout[i][i]), 1e-10);
 	aout[j][i]=sum/max_a;
       }
     }

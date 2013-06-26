@@ -1,19 +1,14 @@
 Package: casper
-Version: 1.1.1
-Date: 2013-02-25
-Title: Characterization of Alternative Splicing based on Paired-End
-        Reads
+Version: 1.1.2
+Date: 2013-06-26
+Title: Characterization of Alternative Splicing based on Paired-End Reads
 Author: David Rossell, Camille Stephan-Otto, Manuel Kroiss
-Maintainer: David Rossell <rosselldavid@gmail.com>
-Depends: R (>= 2.14.1), Biobase, IRanges, methods, gtools, GenomicRanges, Rsamtools
-Imports: VGAM, mgcv, GenomicFeatures, survival
-Enhances: multicore
+Maintainer: David Rossell <rosselldavid@gmail.org>
+Depends: R (>= 2.14.1), Biobase, IRanges, methods, gtools, GenomicRanges, Rsamtools, plyr, gaga
+Imports: VGAM, mgcv, GenomicFeatures, survival, sqldf
+Enhances: parallel
 Description: Infer alternative splicing from paired-end RNA-seq data. The model is based on counting paths across exons, rather than pairwise exon connections, and estimates the fragment size and start distributions non-parametrically, which improves estimation precision. 
 License: GPL (>=2)
 LazyLoad: yes
-Collate: GenericDefs.R ClassDefinitions.R calcExp.R
-         genePlot.R getDistrs.R mergeExp.R pathCounts.R
-        procBam.R procGenome.R rmShortInserts.R truncnorm.R wrapKnown.R
-	simReads.R createDenovoGenome.R
-biocViews: Bioinformatics, GeneExpression, DifferentialExpression,
-        Transcription, RNASeq, HighThroughputSequencing
+Collate: GenericDefs.R ClassDefinitions.R calcDenovo.R calcExp.R createDenovoGenome.R genePlot.R getDistrs.R modelPrior.R pathCounts.R procBam.R procGenome.R rmShortInserts.R simMultSamples.R simPost.R simReads.R splitGenomeByLength.R truncnorm.R mergeExp.R wrapKnown.R 
+biocViews: Bioinformatics, GeneExpression, DifferentialExpression, Transcription, RNASeq, HighThroughputSequencing

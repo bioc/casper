@@ -12,31 +12,32 @@
      
 
 
-SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP exon_num, SEXP exon_st, SEXP exon_end, SEXP exon_id, SEXP len_distrV, SEXP len_distrD, SEXP st_distrV, SEXP st_distrD, SEXP read_len, SEXP nn, SEXP tx_strand, SEXP lr_fileR, SEXP chr, SEXP rseed, SEXP rbam, SEXP rinsideBam){
+SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP exon_num, SEXP exon_st, SEXP exon_end, SEXP exon_id, SEXP len_distrV, SEXP len_distrD, SEXP st_distrV, SEXP st_distrD, SEXP read_len, SEXP nn, SEXP tx_strand, SEXP lr_fileR, SEXP chr, SEXP rseed, SEXP rbam, SEXP rinsideBam, SEXP verbose){
 
   int i=0, *ge, *vn, *vl, *en, *es, *ee, *ei, *txstr, ngenes, *ldv, rl, ldlen, sdlen, n, bam, insideBam;
   double *ve, *ldd, *sdv, *sdd;
   FILE *LRFILE=NULL;
   SEXP startsTmp;
-  PROTECT(gene_exp = coerceVector(gene_exp, INTSXP));
-  PROTECT(var_exp = coerceVector(var_exp, REALSXP));
-  PROTECT(var_num = coerceVector(var_num, INTSXP));
-  PROTECT(var_len = coerceVector(var_len, INTSXP));
-  PROTECT(exon_num = coerceVector(exon_num, INTSXP));
-  PROTECT(exon_st = coerceVector(exon_st, INTSXP));
-  PROTECT(exon_end = coerceVector(exon_end, INTSXP));
-  PROTECT(exon_id = coerceVector(exon_id, INTSXP));
-  PROTECT(tx_strand = coerceVector(tx_strand, INTSXP));
-  PROTECT(len_distrV = coerceVector(len_distrV, INTSXP));
-  PROTECT(len_distrD = coerceVector(len_distrD, REALSXP));
-  PROTECT(st_distrV = coerceVector(st_distrV, REALSXP));
-  PROTECT(st_distrD = coerceVector(st_distrD, REALSXP));
-  PROTECT(read_len = coerceVector(read_len, INTSXP));
-  PROTECT(nn = coerceVector(nn, INTSXP));
-  PROTECT(lr_fileR = AS_CHARACTER(lr_fileR));
-  PROTECT(chr = coerceVector(chr, STRSXP));
-  PROTECT(rbam = coerceVector(rbam, INTSXP));
-  PROTECT(rinsideBam = coerceVector(rinsideBam, INTSXP));
+  PROTECT(gene_exp);// = coerceVector(gene_exp, INTSXP));
+  PROTECT(var_exp);// = coerceVector(var_exp, REALSXP));
+  PROTECT(var_num);// = coerceVector(var_num, INTSXP));
+  PROTECT(var_len);// = coerceVector(var_len, INTSXP));
+  PROTECT(exon_num);// = coerceVector(exon_num, INTSXP));
+  PROTECT(exon_st);// = coerceVector(exon_st, INTSXP));
+  PROTECT(exon_end);// = coerceVector(exon_end, INTSXP));
+  PROTECT(exon_id);// = coerceVector(exon_id, INTSXP));
+  PROTECT(tx_strand);// = coerceVector(tx_strand, INTSXP));
+  PROTECT(len_distrV);// = coerceVector(len_distrV, INTSXP));
+  PROTECT(len_distrD);// = coerceVector(len_distrD, REALSXP));
+  PROTECT(st_distrV);// = coerceVector(st_distrV, REALSXP));
+  PROTECT(st_distrD);// = coerceVector(st_distrD, REALSXP));
+  PROTECT(read_len);// = coerceVector(read_len, INTSXP));
+  PROTECT(nn);// = coerceVector(nn, INTSXP));
+  PROTECT(lr_fileR);// = AS_CHARACTER(lr_fileR));
+  PROTECT(chr);// = coerceVector(chr, STRSXP));
+  PROTECT(rbam);// = coerceVector(rbam, INTSXP));
+  PROTECT(rinsideBam);// = coerceVector(rinsideBam, INTSXP));
+  PROTECT(verbose);
   
   ge = INTEGER(gene_exp);
   ve = REAL(var_exp);
@@ -111,7 +112,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   }
   
   paths = &paths_pted;
-  hash_init(paths, NextPow2(n)); 
+  hash_init(paths, NextPow2(length(exon_st)*20)); 
 
   int l=0, cnt=0;
   char geStr[2], *last;
@@ -173,7 +174,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
 	i++;
 	j=1;
 	if(i % (int) floor(n*0.1) == 0) {
-	  Rprintf("%d %% of fragments simulated\n", (int) ceil(((double)i/(double)n)*100));
+          if(INTEGER(verbose)[0]==1) Rprintf("%d %% of fragments simulated\n", (int) ceil(((double)i/(double)n)*100));
 	  R_CheckUserInterrupt();
 	}
       }
@@ -202,7 +203,8 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
       }
     }
   }
-  
+  hash_destroy(paths);
+         
   
   SET_VECTOR_ELT(ans, 0, gans);
   SET_VECTOR_ELT(ans, 1, vans);
@@ -217,8 +219,17 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   SET_VECTOR_ELT(ans, 10, posr);
   SET_VECTOR_ELT(ans, 11, cigar);
 
-  UNPROTECT(33);
+  UNPROTECT(34);
 
+  for (i=0; i<ngenes; i++){
+    free(genes[i].chr);
+    for(j=0; j<vn[i]; j++) {
+      free(genes[i].vars[j].exst);
+      free(genes[i].vars[j].exen);
+      free(genes[i].vars[j].exid);
+    }
+    free(genes[i].vars);
+  }
   free(genes);   
   if(bam==1){
     for(i=0; i<3; i++) free(cigars[i]);

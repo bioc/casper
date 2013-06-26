@@ -1,14 +1,15 @@
 useDynLib(casper)
 
 import(IRanges, graphics)
-importFrom(VGAM,vglm,betabinomial.ab,Coef)
+importFrom(GenomicFeatures, transcripts, exonsBy, makeTranscriptDb)
 importFrom(mgcv,gam,predict.gam,s)
-importFrom(GenomicFeatures, transcripts, exonsBy)
+importFrom(sqldf, sqldf)
+importFrom(VGAM,vglm,betabinomial.ab,Coef)
+importClassesFrom(GenomicFeatures, TranscriptDb)
 importFrom(survival,Surv,survfit)
-importFrom(Rsamtools, scanBamWhat, scanBamHeader, scanBamFlag, ScanBamParam, scanBam)
 
 #export regular functions
-export(calcExp, getDistrs, getIsland, genePlot, pathCounts, procBam, procGenome, rmShortInserts, transcripts, getReads, getNreads, getChr, getIsland, subsetGenome, mergeExp, wrapKnown, simReads )
+export(calcDenovo, calcExp, createDenovoGenome, getDistrs, getIsland, genePlot, modelPrior, pathCounts, plotPriorAS, posprob, procBam, procGenome, relativeExpr, rmShortInserts, simMultSamples, simReads, transcripts, variants, "variants<-", getReads, getNreads, getChr, getIsland, subsetGenome, mergeExp, txLength, wrapKnown)
 
 exportClasses(annotatedGenome, pathCounts, procBam)
 #export general methods

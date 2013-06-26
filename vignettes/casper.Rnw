@@ -260,7 +260,7 @@ and the read start distribution.
 \footnotesize
 <<process2>>=
 bam0 <- rmShortInserts(K562.r1l1, isizeMin=100)
-distrs <- getDistrs(hg19DB,bam=bam0)
+distrs <- getDistrs(hg19DB,bam=bam0,readLength=75)
 @ 
 \normalsize
 

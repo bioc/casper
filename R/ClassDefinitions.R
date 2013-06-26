@@ -7,9 +7,9 @@ setClass("procBam", representation(pbam = "GRanges", junx="GRanges", stranded = 
 setMethod("show", signature(object="procBam"), function(object) {
   cat("procBam object created from",ifelse(object@stranded,"stranded","non-stranded"),"reads\n")
   if(object@stranded) {
-    cat("Contains",length(object@plus),"ranges in the positive strand corresponding to",length(unique(names(object@plus))),"unique read pairs\n")
-    cat("and",length(object@minus),"ranges in the negative strand corresponding to",length(unique(names(object@minus))),"unique read pairs\n")
-  } else cat("Contains",length(object@pbam),"ranges corresponding to",length(unique(names(object@pbam))),"unique read pairs\n")
+    cat("Contains",length(object@plus),"ranges in the positive strand corresponding to",length(unique(values(object@plus)$names)),"unique read pairs\n")
+    cat("and",length(object@minus),"ranges in the negative strand corresponding to",length(unique(values(object@minus)$names)),"unique read pairs\n")
+  } else cat("Contains",length(object@pbam),"ranges corresponding to",length(unique(values(object@pbam)$names)),"unique read pairs\n")
 }
           )
 
@@ -38,10 +38,13 @@ setMethod("plot", signature(x="readDistrs"), function(x, y, ...) {
   if ('lwd' %in% names(args)) lwd <- args$lwd else lwd <- 1
   if (y=='fragLength') {
     n <- as.numeric(names(x@lenDis))
-    if ('ylim' %in% names(args)) ylim <- args$ylim else ylim <- c(0,max(x@lenDis))
     x2plot <- double(max(n)-min(n)+1); names(x2plot) <- min(n):max(n)
     x2plot[names(x@lenDis)] <- x@lenDis
-    plot(as.numeric(names(x2plot)),x2plot,type='l',xlab='Fragment length',ylab='Counts',ylim=ylim,col=col,lty=lty,lwd=lwd)
+    x <- as.numeric(names(x2plot))
+    if ('xlim' %in% names(args)) xlim <- args$xlim else xlim <- range(x)
+    y2plot <- x2plot/sum(x2plot)
+    if ('ylim' %in% names(args)) ylim <- args$ylim else ylim <- c(0,max(y2plot))
+    plot(x,y2plot,type='l',xlab='Fragment length',ylab='Proportion of reads',xlim=xlim,ylim=ylim,col=col,lty=lty,lwd=lwd)
   } else if (y=='readSt') {
     s <- seq(0,1,by=0.02)
     probs <- diff(x@stDis(s))
@@ -66,7 +69,7 @@ setMethod("lines", signature(x="readDistrs"), function(x, ...) {
     n <- as.numeric(names(x@lenDis))
     x2plot <- double(max(n)-min(n)+1); names(x2plot) <- min(n):max(n)
     x2plot[names(x@lenDis)] <- x@lenDis
-    lines(as.numeric(names(x2plot)),x2plot,col=col,lty=lty,lwd=lwd)
+    lines(as.numeric(names(x2plot)),x2plot/sum(x2plot),col=col,lty=lty,lwd=lwd)
   } else if (y=='readSt') {
     s <- seq(0,1,by=0.02)
     probs <- diff(x@stDis(s))
