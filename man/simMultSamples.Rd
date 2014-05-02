@@ -15,7 +15,8 @@
   i.e. based on the current available data \code{x}.
 }
 \usage{
-simMultSamples(B, nsamples, nreads, readLength, x, groups='group', distrs, genomeDB, verbose=TRUE, mc.cores=1)
+simMultSamples(B, nsamples, nreads, readLength, x, groups='group',
+  distrs, genomeDB, verbose=TRUE, mc.cores=1)
 }
 \arguments{
   \item{B}{Number of simulations to obtain}

@@ -14,7 +14,8 @@ The prior distribution is compared to the observed frequencies to check
 that the assumed distributional forms are reasonable.
 }
 \usage{
-plotPriorAS(object, type = "nbVariants", exons = 1:9, xlab, ylab = "Probability", col = c("red", "blue")) 
+plotPriorAS(object, type="nbVariants", exons=1:9, xlab,
+ylab="Probability", col=c("red","blue"))
 }
 \arguments{
  \item{object}{\code{modelPriorAS} object with prior distribution on

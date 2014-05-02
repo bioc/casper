@@ -12,7 +12,7 @@
 
 SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP mpos, SEXP cigar, SEXP strand, SEXP totFrags, SEXP totReads, SEXP flag, SEXP totJunx, SEXP len, SEXP strs, SEXP key, SEXP chrom, SEXP rid, SEXP rstrand, SEXP jchrom, SEXP jstrs, SEXP jlen, SEXP rflag){
 	read_t *frags;
-	int totF, j, l, hashSize, i, frags_size, reads_size, *qname_p;
+	int totF, j, l, hashSize, i, frags_size, *qname_p;
 	hash_t *fragsHashPtr, fragsHash;
 	hash_node_t *bucket;
 	char *echrom="\0";
@@ -38,7 +38,7 @@ SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP mpos, SEXP cigar, SEXP stran
 	PROTECT(strand);
 	int *p_strand=INTEGER(strand);
 	int *p_flag=INTEGER(flag);
-	reads_size = INTEGER(totReads)[0];
+	//int reads_size = INTEGER(totReads)[0];
 	char *str;
 	str=malloc(100 * sizeof(char));
 	totF=0;

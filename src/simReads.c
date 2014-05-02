@@ -101,7 +101,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
 
 
   int j, *starts, gap, totp=0;
-  char **cigars; 
+  char **cigars = NULL;
   char seqstr[rl+1], seqnuc[2]="=", tmpchar[100];
   hash_t *paths, paths_pted;
   PROTECT(startsTmp=allocVector(INTSXP, 3));

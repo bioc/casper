@@ -244,7 +244,7 @@ calcDenovo <- function(distrs, genomeDB, pc, readLength, islandid, priorq=3, mpr
   rownames(fdata) <- as.character(fdata$transcript)
   tx <- strsplit(as.character(fdata$exons),split=',')
   tx <- data.frame(tx=rep(fdata$transcript, sapply(tx,length)) , exon=unlist(tx))
-  txLength <- casper:::txLengthBase(tx=tx, genomeDB=genomeDB)
+  txLength <- txLengthBase(tx=tx, genomeDB=genomeDB)
   ans@txLength <- txLength
   return(ans)
 }

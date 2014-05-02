@@ -570,9 +570,9 @@ void DataFrame::path2Variants(set<Variant*, VariantCmp> *newvaris, set<Variant*,
 
     curvarex = 0; ex= (curvar->exons)[0];
 
-    if(f->leftc>1 & (f->left[0]>f->left[1])) strand=-1;
-    if(f->rightc>1 & (f->right[0]>f->right[1])) strand=-1;
-    if(f->left[0] > f->right[0] | ex->id > (curvar->exons)[curvar->exonCount-1]->id) strand=-1;
+    if(((f->leftc)>1) & (f->left[0]>f->left[1])) strand=-1;
+    if(((f->rightc)>1) & (f->right[0]>f->right[1])) strand=-1;
+    if((f->left[0] > f->right[0]) | (ex->id > (curvar->exons)[curvar->exonCount-1]->id)) strand=-1;
 
     if(strand==1){
       while ((curvarex < curvar->exonCount) && (ex->id < (f->left[0]))) {

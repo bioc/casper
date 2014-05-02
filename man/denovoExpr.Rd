@@ -69,7 +69,7 @@ pc <- pathCounts(pbam0, DB=hg19DB)
 mprior <- modelPrior(hg19DB, maxExons = 40, smooth = TRUE, verbose=TRUE)
 
 #Fit model
-denovo <- calcDenovo(distrs, genomeDB=hg19DB, pc=pc, readLength=75, priorq = 3, mprior=mprior, minpp=0)
+denovo <- calcDenovo(distrs,genomeDB=hg19DB,pc=pc,readLength=75,priorq=3,mprior=mprior,minpp=0)
 
 head(names(denovo))
 denovo[['6499']]

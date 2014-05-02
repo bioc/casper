@@ -1,14 +1,13 @@
 Package: casper
-Version: 1.6.0
-Date: 2014-03-12
+Version: 1.8.0
+Date: 2014-04-30
 Title: Characterization of Alternative Splicing based on Paired-End
         Reads
 Author: David Rossell, Camille Stephan-Otto, Manuel Kroiss, Miranda
         Stobbe
 Maintainer: David Rossell <rosselldavid@gmail.org>
-Depends: R (>= 2.14.1), Biobase, IRanges, methods, gtools,
-        GenomicRanges, Rsamtools, plyr, gaga
-Imports: VGAM, mgcv, GenomicFeatures, survival, sqldf
+Depends: R (>= 2.14.1), Biobase, IRanges, methods, GenomicRanges
+Imports: BiocGenerics, EBarrays, gaga, gtools, GenomicFeatures, mgcv, Rsamtools, rtracklayer, sqldf, survival, VGAM
 Enhances: parallel
 Description: Infer alternative splicing from paired-end RNA-seq data.
         The model is based on counting paths across exons, rather than
@@ -19,7 +18,7 @@ License: GPL (>=2)
 LazyLoad: yes
 Collate: GenericDefs.R ClassDefinitions.R calcDenovo.R calcExp.R
         createDenovoGenome.R genePlot.R getDistrs.R getRoc.R
-        denovoExpr.R mergeBatches.R mergeExp.R modelPrior.R
+        denovoExpr.R makeTranscriptDbFromGFF.R mergeBatches.R mergeExp.R modelPrior.R
         pathCounts.R probNonEquiv.R procBam.R procGenome.R
         rmShortInserts.R simMultSamples.R simPost.R simReads.R
         splitGenomeByLength.R truncnorm.R wrapKnown.R

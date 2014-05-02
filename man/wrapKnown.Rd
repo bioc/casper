@@ -109,8 +109,11 @@ keep.multihits=TRUE, chroms=NULL)
 \item{exp}{Object of class \code{expressionSet}}
 }
 \author{
-  %%  ~~who you are~~
   Camille Stephan-Otto Attolini
+}
+\references{
+Rossell D, Stephan-Otto Attolini C, Kroiss M, Stocker A. Quantifying Alternative Splicing from Paired-End
+RNA-sequencing data. Annals of Applied Statistics, 8(1):309-330.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

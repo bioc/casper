@@ -290,7 +290,7 @@ setMethod("procGenome", signature(genDB="TranscriptDb"), function(genDB, genome,
 setMethod("procGenome", signature(genDB="GRanges"), function(genDB, genome, mc.cores=1) {
   cat("Formatting GTF table with GenomicFeatures tools...\n")
   if (all(c("gene_id", "transcript_id") %in% colnames(mcols(genDB)))) {
-    tables <- GenomicFeatures:::.prepareGTFTables(genDB, exonRankAttributeName=NULL)
+    tables <- .prepareGTFTables(genDB, exonRankAttributeName=NULL) #function copied from GenomicFeatures
   } else {
     stop("Columns named 'gene_id' and 'transcript_id' not found")
   }

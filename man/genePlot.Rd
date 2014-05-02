@@ -18,7 +18,8 @@
   added to the plot.
 }
 \usage{
-genePlot(generanges, islandid, genomeDB, reads, exp, names.arg, xlab='', ylab='', xlim, cex=1, yaxt='n', col, ...)
+genePlot(generanges, islandid, genomeDB, reads, exp, names.arg, xlab='',
+ylab='', xlim, cex=1, yaxt='n', col, ...)
 }
 \arguments{
   \item{generanges}{Object containing the ranges with start/end of each exon.}
