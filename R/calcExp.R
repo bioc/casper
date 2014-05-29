@@ -89,12 +89,12 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
 
   if (verbose) cat("Formatting output...\n")
   transcript <- unlist(lapply(ans, function(z) names(z[[1]])))
-  gene <- rep(names(ans),sapply(ans,function(z) length(z[[1]])))
-  fdata <- data.frame(transcript=transcript, gene=gene)
+  island_id <- rep(names(ans),sapply(ans,function(z) length(z[[1]])))
+  fdata <- data.frame(transcript=transcript, island_id=island_id)
   if(length(miss)>0){
     transcript <- c(transcript, unname(unlist(miss)))
-    gene <- c(gene, rep(names(miss), sapply(miss, length)))
-    fdata <- data.frame(transcript=transcript, gene=gene)
+    island_id <- c(island_id, rep(names(miss), sapply(miss, length)))
+    fdata <- data.frame(transcript=transcript, island_id=island_id)
     ntx.miss <- sapply(miss,length) 
     misse <- rep(1/ntx.miss,ntx.miss) 
     a0 <- rep(priorq*ntx.miss,ntx.miss) 
@@ -153,30 +153,38 @@ procExp <- function(distrs, genomeDB, pc, readLength, islandid, rpkm=TRUE, prior
     }
   rownames(exprsx) <- rownames(fdata) <- fdata$transcript
 
-  fdata <- cbind(fdata, nreads[as.character(fdata$gene)])
+  fdata <- cbind(fdata, nreads[as.character(fdata$island_id)])
   colnames(fdata)[ncol(fdata)] <- "explCnts"
 
   #Compute log(RPKM)
   if (rpkm) {
     if (citype != 0) se.logpi <- fdata$se / exprsx
-    nreads <- nreads[unique(as.character(fdata$gene))]
+    nreads <- nreads[unique(as.character(fdata$island_id))]
     totReads <- sum(nreads) + priorqGeneExpr*length(nreads) 
     txLength <- txLength(genomeDB=genomeDB)
     apost <- nreads + (priorqGeneExpr-1)
     thest <- apost/sum(apost)
-    theta <- data.frame(gene=names(nreads), thest=thest)
+    theta <- data.frame(island_id=names(nreads), thest=thest)
     exprsx <- as.matrix(logrpkm(fdata, th=theta, pi=exprsx, genomeDB=genomeDB))
     colnames(exprsx) <- NULL
     if (citype != 0) {
       se.theta <- sqrt(apost * (1-apost/totReads) / (totReads * (totReads+1))) 
       se.logtheta <- se.theta / thest
-      fdata$se <- sqrt(se.logpi^2 + se.logtheta[as.character(fdata$gene)]^2)
+      fdata$se <- sqrt(se.logpi^2 + se.logtheta[as.character(fdata$island_id)]^2)
       alpha <- 0.05
       err <- qnorm(alpha/2)*fdata$se; fdata$ci95.low <- exprsx + err; fdata$ci95.high <- exprsx - err #Added
     }
   }
   #Return ExpressionSet
-
+  tx2gene <- unique(genomeDB@aliases[,c('tx_name','gene_id')])
+  names(tx2gene)[1] <- 'transcript'
+  fdata$transcript <- as.character(fdata$transcript)
+  tx2gene$transcript <- as.character(tx2gene$transcript)
+  fdata <- merge(fdata, tx2gene, by='transcript')
+  rownames(fdata) <- fdata$transcript
+  if(citype!=0) {
+    fdata <- fdata[rownames(exprsx),c('transcript','gene_id','island_id','explCnts', 'ci95.low', 'ci95.high')]
+  } else fdata <- fdata[rownames(exprsx),c('transcript','gene_id','island_id','explCnts')]
   fdata <- new("AnnotatedDataFrame",fdata)
   ans <- new("ExpressionSet",exprs=exprsx,featureData=fdata)
   ans

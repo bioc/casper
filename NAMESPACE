@@ -16,7 +16,7 @@ importMethodsFrom(VGAM, Coef, model.matrix, predict)
 importFrom(VGAM,vglm,betabinomial.ab)
 
 #export regular functions
-export(calcDenovo, calcExp, createDenovoGenome, denovoExpr, getDistrs, getIsland, genePlot, getRoc, mergeBatches, mergeExp, modelPrior, pathCounts, plotPriorAS, posprob, probNonEquiv, procBam, procGenome, quantileNorm, relativeExpr, rmShortInserts, simMultSamples, simReads, transcripts, variants, "variants<-", getReads, getNreads, getChr, getIsland, subsetGenome, txLength, wrapKnown)
+export(calcDenovo, calcExp, createDenovoGenome, denovoExpr, getDistrs, getIsland, genePlot, getRoc, mergeBatches, mergeExp, modelPrior, pathCounts, plotPriorAS, posprob, probNonEquiv, procBam, procGenome, quantileNorm, relativeExpr, rmShortInserts, simMultSamples, simReads, transcripts, variants, "variants<-", getReads, getNreads, getChr, getIsland, subsetGenome, txLength, wrapKnown, relexprByGene)
 
 exportClasses(annotatedGenome, simulatedSamples, pathCounts, procBam)
 #export general methods

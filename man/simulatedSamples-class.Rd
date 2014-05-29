@@ -5,6 +5,9 @@
 \alias{show,simulatedSamples-method}
 \alias{coef,simulatedSamples-method}
 \alias{exprs,simulatedSamples-method}
+\alias{[,simulatedSamples,ANY,ANY,ANY-method}
+\alias{[,simulatedSamples,missing,index,missing-method}
+
 
 \title{Class "simulatedSamples"}
 \description{
@@ -35,6 +38,8 @@
     \item{mergeBatches}{\code{signature(x="ExpressionSet",y="simulatedSamples")}:
     Combines \code{x} with each element in \code{exprs} in \code{y}, and
     returns a list. See \code{help(mergeBatches)} for more details.}
+    \item{"["}{\code{x[i]} selects a subset of simulations, \code{x[,j]}
+    a subset of the samples in each simulation}
   }
 }
 \author{

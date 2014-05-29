@@ -26,6 +26,7 @@ setMethod("mergeBatches", signature(x='ExpressionSet',y='ExpressionSet'), functi
   xnewnorm <- quantileNorm(xnew)
   xnewadj <- anovaAdjustment(xnewnorm, adjustmentVariable='batch')
   if (all(c('readCount.x','readCount.y') %in% fvarLabels(xnewadj))) fData(xnewadj)$readCount <- rowSums(fData(xnewadj)[,c('readCount.x','readCount.y')])
+  cat('.')
   return(xnewadj)
 }
 )

@@ -428,7 +428,9 @@ head(fData(eset))
 When setting \texttt{rpkm} to \texttt{FALSE}, \texttt{calExp} returns relative
 expression estimates for each isoform.
 That is, the proportion of transcripts originating from each variant,
-so that the estimated expressions add up to 1 for each gene.
+so that the estimated expressions add up to 1 for each island.
+If you would prefer relative expressions that add up to 1 within each gene
+you can use function \texttt{relexprByGene}.
 When setting \texttt{rpkm} to \texttt{TRUE},
 expression estimates in reads per kilobase per million (RPKM)
 are returned instead.

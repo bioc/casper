@@ -62,12 +62,14 @@ getDistrs <- function(DB, bam, pbam, islandid=NULL, verbose=FALSE, nreads=4*10^6
     ans <- getDistrsFrompBam(DB=DB, pbam=pbam, islandid=islandid, verbose=verbose, nreads=nreads)
   }
   #Truncate length distr to (median - 3*IQR, median + 6*IQR)
-  w <- ans@lenDis/max(ans@lenDis)
-  wcum <- cumsum(w/sum(w))
-  q <- as.numeric(c(names(wcum)[which(wcum>.25)[1]],names(wcum)[which(wcum>.75)[1]]))
-  iqr <- q[2]-q[1]
-  sel <- (as.numeric(names(wcum))>= q[1]-3*iqr) & (as.numeric(names(wcum))<= q[2]+6*iqr)
-  ans@lenDis <- ans@lenDis[sel]
+  if(length(ans@lenDis)>1) {
+    w <- ans@lenDis/max(ans@lenDis)
+    wcum <- cumsum(w/sum(w))
+    q <- as.numeric(c(names(wcum)[which(wcum>.25)[1]],names(wcum)[which(wcum>.75)[1]]))
+    iqr <- q[2]-q[1]
+    sel <- (as.numeric(names(wcum))>= q[1]-3*iqr) & (as.numeric(names(wcum))<= q[2]+6*iqr)
+    ans@lenDis <- ans@lenDis[sel]
+  }
   return(ans)
 }
 

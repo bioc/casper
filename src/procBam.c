@@ -105,14 +105,14 @@ SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP mpos, SEXP cigar, SEXP stran
 		    frags[tmp].len_1 += cigs[j];
 		    counter++;
 		  } else {
-		    if(INTEGER(totJunx)[0]>1){
-		      if((cigs[0]>1)&&(j<cigs[0])) {
+		    if((cigs[0]>1)&&(j<cigs[0])) {
+		      if(INTEGER(totJunx)[0]>1){
 			if(length(chr)>1) SET_STRING_ELT(jchrom, jcounter, mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_1))));
 			p_jstrs[jcounter] = frags[tmp].len_1;
-			frags[tmp].len_1 -= cigs[j];		    
 			p_jlen[jcounter] = frags[tmp].len_1-1;
 			jcounter++;
 		      }
+		      frags[tmp].len_1 -= cigs[j];		    
 		    }
 		  }
 		}
@@ -132,17 +132,16 @@ SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP mpos, SEXP cigar, SEXP stran
 		    p_rid[counter] = 2;
 		    p_rstrand[counter] = p_strand[frags[tmp].strand_2];
 		    frags[tmp].len_2+=cigs[j];
-		    //printf("I'm here %d %d %d %d %d %d\n", frags[tmp].len_2, counter, p_strs[counter], p_len[counter], cigs[j], j);
 		    counter++;
 		  } else {
-		    if(INTEGER(totJunx)[0]>1){
-		      if((cigs[0]>1)&&(j<cigs[0])) {
+		    if((cigs[0]>1)&&(j<cigs[0])) {
+		      if(INTEGER(totJunx)[0]>1){
 			if(length(chr)>1) SET_STRING_ELT(jchrom, jcounter, mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_2))));
 			p_jstrs[jcounter] = frags[tmp].len_2;
-			frags[tmp].len_2 -= cigs[j];
 			p_jlen[jcounter] = frags[tmp].len_2-1;
 			jcounter++;
 		      }
+		      frags[tmp].len_2 -= cigs[j];
 		    }
 		  }
 		}

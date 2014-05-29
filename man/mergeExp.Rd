@@ -8,7 +8,7 @@
   samples, i.e. multiple \code{ExpressionSet} objects, into a single \code{ExpressionSet}
 }
 \usage{
-mergeExp(..., sampleNames,  keep=c('transcript','gene'))
+mergeExp(..., sampleNames,  keep=c('transcript','gene_id','island_id'))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

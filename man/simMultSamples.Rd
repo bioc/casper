@@ -5,9 +5,8 @@
   based on pilot data, and obtain their expression estimates via casper
 }
 \description{
-  Simulate true mean expression levels for each group and future individual
-  samples within each group, and simulate future observed data (in the
-  form of Casper expression estimates).
+  Simulate true expression levels and observed data (casper expression
+  estimates) for future samples within each group.
   
   These simulations serve as the basis for sample size calculation:
   if one were to sequence \code{nsamples} new RNA-seq samples, what data
@@ -22,9 +21,9 @@ simMultSamples(B, nsamples, nreads, readLength, x, groups='group',
   \item{B}{Number of simulations to obtain}
   \item{nsamples}{Vector indicating number of future samples per group,
     e.g. \code{nsamples=c(5,5)} to simulate 5 new samples for 2 groups.}
-  \item{nreads}{number of RNA-seq reads per
-  sample. \code{simMultSamples} assumes that exactly these many reads will be
-  aligned to the genome.}
+  \item{nreads}{Desired number of paired-end reads per
+    sample. The actual number of aligned reads for any given sample
+  differs from this amount, see details.}
   \item{readLength}{Read length, i.e. in an experiment with paired reads
     at 100bp each, \code{readLength=100}.}
   \item{x}{\code{ExpressionSet} containing pilot data. \code{x[[group]]} indicates groups to be compared}
@@ -74,8 +73,15 @@ simMultSamples(B, nsamples, nreads, readLength, x, groups='group',
 
   3. Determine the number of reads to be simulated for each gene based
   on its true expression (generated in step 2) and a Multinomial
-  sampling model. Simulate aligned reads in the form of path counts.
-  The number of simulated reads is reported in component \code{"simExpr"}
+  sampling model. For each sample:
+
+  - The number of reads yielded by the experiment is Unif(.8*nreads,1.2*nreads)
+  - A proportion of non-mappable reads is discarded using the power law in Li
+  et al (2014)
+  - Amongst remaining reads, we assume that a proportion Unif(0.6,0.9) were aligned
+   (consistenly with reports from ENCODE project)
+    
+  The final number of simulated reads is reported in component \code{"simExpr"}
   of the \code{simMultSamples} output.
   
   4. Obtain expression estimates from the path counts produced in step 3
@@ -84,6 +90,6 @@ simMultSamples(B, nsamples, nreads, readLength, x, groups='group',
   
 }
 \author{
-Victor Pena
+Victor Pena, David Rossell
 }
 \keyword{ datagen }

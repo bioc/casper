@@ -13,17 +13,14 @@ int *procCigar(char *cigar, int *cigs){
   int pos=0;
   cigs[0]=0;
   num=malloc(20*sizeof(char));
-  // printf("%s\n", cigar);
   for(int t=0; t<strlen(cigar); t++){
     switch(*(cigar+t))
       {
       case 'M':
 	strncpy(num, cigar+pos, (t-pos)*sizeof(char));
 	num[t-pos]='\0';
-	//	printf("%s %d %d\n", num, pos, t);
 	pos=t+1;
 	sscanf(num, "%d", &cigs[cigs[0]+1]);
-	//printf("%d %s %s %d\n", cigs[cigs[0]+1], cigar, num, pos);
 	cigs[0]++;
 	break;
 
@@ -32,7 +29,6 @@ int *procCigar(char *cigar, int *cigs){
 	num[t-pos]='\0';
 	sscanf(num, "%d", &cigs[cigs[0]+1]);
 	cigs[cigs[0]+1]*=-1;
-	//printf("%s %d %s %s %d %d %d\n", cigar+pos, cigs[cigs[0]+1], cigar, num, pos, t, t-pos);
 	pos=t+1;
 	cigs[0]++;
         break;   

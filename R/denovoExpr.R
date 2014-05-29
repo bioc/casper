@@ -54,7 +54,7 @@ denovoExpr <- function(x, pc, rpkm=TRUE, summarize='modelAvg', minProbExpr=0.5, 
     pis <- rbind(pis, pis.noreads)
   }
   fdata <- variants(x)
-  names(fdata)[1:2] <- c('gene','transcript')
+  names(fdata)[1:2] <- c('island_id','transcript')
   rownames(fdata) <- as.character(fdata$transcript)
   if (pc@stranded) {       
     nreads <- c(unlist(lapply(pc@counts$plus,sum)), unlist(lapply(pc@counts$minus,sum)))
@@ -66,9 +66,9 @@ denovoExpr <- function(x, pc, rpkm=TRUE, summarize='modelAvg', minProbExpr=0.5, 
     len <- x@txLength
     apost <- nreads + (x@priorq-1)
     thest <- apost/sum(apost)
-    theta <- data.frame(gene=names(nreads), thest=thest)
+    theta <- data.frame(island_id=names(nreads), thest=thest)
     #
-    exprsx <- as.matrix(logrpkm(fdata[,c('gene','transcript')], th=theta, pi=pis[,'expr',drop=FALSE], len=len))
+    exprsx <- as.matrix(logrpkm(fdata[,c('island_id','transcript')], th=theta, pi=pis[,'expr',drop=FALSE], len=len))
     colnames(exprsx) <- NULL
     fdata <- fdata[rownames(exprsx),]
     ans <- new("ExpressionSet", exprs=exprsx, featureData=new("AnnotatedDataFrame",fdata))
@@ -77,7 +77,7 @@ denovoExpr <- function(x, pc, rpkm=TRUE, summarize='modelAvg', minProbExpr=0.5, 
     fdata <- fdata[rownames(exprsx),]
     ans <- new("ExpressionSet", exprs=exprsx, featureData=new("AnnotatedDataFrame",fdata))
   }
-  fData(ans)$explCnts <- nreads[as.character(fData(ans)$gene)]
+  fData(ans)$explCnts <- nreads[as.character(fData(ans)$island_id)]
   fData(ans)$probExpressed <- pis[featureNames(ans),'probExpressed']
   return(ans)  
 }

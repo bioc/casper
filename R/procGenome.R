@@ -8,7 +8,7 @@ setMethod("getIsland",signature(entrezid='character',txid='missing',genomeDB='an
 )
 
 setMethod("getIsland",signature(entrezid='missing',txid='character',genomeDB='annotatedGenome'),function(entrezid, txid, genomeDB) {
-  if (txid %in% rownames(genomeDB@aliases)) {
+  if (all(txid %in% rownames(genomeDB@aliases))) {
     ans <- as.character(genomeDB@aliases[txid,'island_id'])
   } else {
     warning("Exact match for txid not found, using 'grep' instead. Multiple matches may be returned")

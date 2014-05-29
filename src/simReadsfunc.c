@@ -102,8 +102,7 @@ double cumu_fragsta(double x, double *startcdf, double lencdf)
   double y1= startcdf[idx], x1= (double) idx / (lencdf-1);
   idx++;
   double y2= startcdf[idx], x2= (double) idx / (lencdf-1);
-  //printf("%f %f %f %f %f %f %d\n", x, x1, x2, y1, y2, lencdf, idx); 
-  return y1 + (x-x1) * (y2-y1)/(x2-x1);
+   return y1 + (x-x1) * (y2-y1)/(x2-x1);
 }
 
 
@@ -120,8 +119,14 @@ double cumu_fragsta(double x, double *startcdf, double lencdf)
 int choose_len(int varlen, double *ldv, double *ldd, int ldlen) {
   int i;
   double ran, maxp=1;
-  if(varlen<ldd[ldlen-1]) maxp=ldv[(int)(varlen-ldd[0])];
- 
+  if(varlen<ldd[ldlen-1]) {  //variant shorter than longest possible fragment
+    if (varlen>ldd[0]) {
+      maxp=ldv[(int)(varlen-ldd[0])];
+    } else {
+      return(varlen); //variant shorter than shortest possible fragment
+    }
+  }
+  
   ran = (rand() / ( RAND_MAX + 1.0 )) *maxp;
   if(ran<ldv[0]) return(ldd[0]);
   for(i=1; i<ldlen; i++) if((ldv[i-1]<=ran) && (ran < ldv[i])) return(ldd[i]);
@@ -168,82 +173,91 @@ int *build_path(var_t var, int len, int st, int rl, hash_t *path, int strand, in
 
   pa = malloc((40 * var.nex) * sizeof(char));
   strcpy(pa, ".");
+  //if ((2*rl) > var.len) rl= var.len/2; //trim read length if variant shorter. Local variable so doesn't affect subsequent calls
+  if ((rl) > var.len) rl= var.len-1; //trim read length if variant shorter. Local variable so doesn't affect subsequent calls
   if(strand==1) {
     rst = st + len - rl;
     en = st + rl - 1;
     ren = rst + rl;
-  }
-  else {
+  } else {
     if((var.len - st - len + 2)<0) Rprintf("%d %d %d %d %d %d\n", st, en, rst, ren, var.len, len);    
     st = var.len - st - len + 2;
     rst = st + len - rl; 
     en = st + rl - 1;
     ren = rst + rl - 1;
-    if(st<0) Rprintf("%d %d %d %d %d %d\n", st, en, rst, ren, var.len, len);    
-}
-
-  here=0;
-  sum=1;
-  //  int chk=0;
-  for(i=0; i<var.nex; i++) {
-    skip=0;
-    //   chk=0;
-    wis = abs(var.exen[i] - var.exst[i])+1;
-    if((sum<=st) && (st<sum+wis)) {
-      sprintf(id, "%d", var.exid[i]);
-      strcat(pa, id);
-      pos=i;
-      here=1;
-      skip=1;
-    }
-    if((sum<=en) && (en<sum+wis)) {
-      if(pos!=i){
-	strcat(pa, ".");
-	sprintf(id, "%d", var.exid[i]);
-	strcat(pa, id);
-      }
-      break;
-    }
-    if((skip==0) && (here>0)) {
-      strcat(pa, ".");
-      sprintf(id, "%d", var.exid[i]);
-      strcat(pa, id);
-    }
-    sum+=wis;
+    if(st<0) Rprintf("%d %d %d %d %d %d\n", st, en, rst, ren, var.len, len);	
   }
 
-  strcat(pa, "-");
-  sum=1;
   here=0;
-  // chk=0;
-  for(i=0; i<var.nex; i++) {
-    skip=0;
-    //  chk=0;
-    wis = abs(var.exen[i] - var.exst[i]) + 1;
-    if((sum<=rst) && (rst<sum+wis)){
-      sprintf(id, "%d", var.exid[i]);
-      strcat(pa, id);
-      pos=i;
-      here=1;
-      skip=1;
-    }
-    if((sum<=ren) && (ren<sum+wis)) {
-      if(pos!=i){
+  sum=1;
+
+  if(var.nex!=1){
+    for(i=0; i<var.nex; i++) {
+      skip=0;
+      wis = abs(var.exen[i] - var.exst[i])+1;
+      if((sum<=st) && (st<sum+wis)) {
+	sprintf(id, "%d", var.exid[i]);
+	strcat(pa, id);
+	pos=i;
+	here=1;
+	skip=1;
+      }
+      if((sum<=en) && (en<sum+wis)) {
+	if(pos!=i){
+	  strcat(pa, ".");
+	  sprintf(id, "%d", var.exid[i]);
+	  strcat(pa, id);
+	}
+	break;
+      }
+      if((skip==0) && (here>0)) {
 	strcat(pa, ".");
 	sprintf(id, "%d", var.exid[i]);
 	strcat(pa, id);
       }
-      strcat(pa, ".");
-      break;
+      sum+=wis;
     }
-    if((skip==0) && (here>0)) {
-      strcat(pa, ".");
-      sprintf(id, "%d", var.exid[i]);
-      strcat(pa, id);
+    strcat(pa, "-");
+    sum=1;
+    here=0;
+  // chk=0;
+    for(i=0; i<var.nex; i++) {
+      skip=0;
+    //  chk=0;
+      wis = abs(var.exen[i] - var.exst[i]) + 1;
+      if((sum<=rst) && (rst<sum+wis)){
+	sprintf(id, "%d", var.exid[i]);
+	strcat(pa, id);
+	pos=i;
+	here=1;
+	skip=1;
+      }
+      if((sum<=ren) && (ren<=sum+wis)) {
+	if(pos!=i){
+	  strcat(pa, ".");
+	  sprintf(id, "%d", var.exid[i]);
+	  strcat(pa, id);
+	}
+	strcat(pa, ".");
+	break;
+      }
+      if((skip==0) && (here>0)) {
+	strcat(pa, ".");
+	sprintf(id, "%d", var.exid[i]);
+	strcat(pa, id);
+      }
+      sum+=wis;
     }
-    sum+=wis;
+  } else {
+    sprintf(id, "%d", var.exid[0]);
+    strcat(pa, id);
+    strcat(pa, "-");
+    sprintf(id, "%d", var.exid[0]);
+    strcat(pa, id);
+    strcat(pa, ".");
   }
   starts[2]=0;
+  
   
   l=hash_lookup(path, pa);
   if(l!=HASH_FAIL) hash_update(path, pa, l+1); 

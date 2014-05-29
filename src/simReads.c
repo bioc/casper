@@ -121,6 +121,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   char geStr[2], *last;
   
   i=0;
+
   while(i<n) {
     j=0;
     cnt=0;
@@ -129,12 +130,12 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
     st=-1;
     //len = ldv[i];
     len = choose_len(genes[gene].vars[var].len, ldv, ldd, ldlen);
-    //if(len>genes[gene].vars[var].len) len=genes[gene].vars[var].len;
+    if(len>genes[gene].vars[var].len) { len=genes[gene].vars[var].len; }
     while(j==0){
       cnt++;
-      st = choose_st(len, genes[gene].vars[var].len, sdv, sdd, sdlen, genes[gene].vars[var].strand);
-      if(st>=0) {
-        
+      if(len==genes[gene].vars[var].len) st=1; 
+      else st = choose_st(len, genes[gene].vars[var].len, sdv, sdd, sdlen, genes[gene].vars[var].strand);
+      if(st>=0) {        
 	if(bam==1){
           starts=build_cigar(genes[gene].vars[var], len, st, rl, cigars, genes[gene].vars[var].strand);
           if(genes[gene].vars[var].strand==1) vansS[i] = starts[0];
@@ -148,6 +149,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
 	    last = cigars[1] + (int) (strlen((const char *)cigars[1]))-1;
 	    if(strcmp(last, "N")!=0){
 	      if((strcmp(cigars[0], "\0")!=0)&&(strcmp(cigars[1], "\0")!=0)) fprintf(LRFILE, "%s.%d.%d\t99\t%s\t%d\t64\t%s\t=\t%d\t%d\t%s\t%s\tXS:A:%s\tRG:Z:%d\n", genes[gene].chr, i, var+1, genes[gene].chr, starts[0], cigars[0], starts[1], gap, seqstr, seqstr, geStr, var+1);
+
 	      if(strcmp("", CHAR(STRING_ELT(lr_fileR, 0)))!=0) {
 		if((strcmp(cigars[0], "\0")!=0)&&(strcmp(cigars[1], "\0")!=0)) fprintf(LRFILE, "%s.%d.%d\t147\t%s\t%d\t64\t%s\t=\t%d\t%d\t%s\t%s\tXS:A:%s\tRG:Z:%d\n", genes[gene].chr, i, var+1, genes[gene].chr, starts[1], cigars[1], starts[0], gap, seqstr, seqstr, geStr, var+1);
 	      }
@@ -180,7 +182,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
 	  R_CheckUserInterrupt();
 	}
       }
-      if(cnt==100) {
+      if(cnt==1000) {
 	break;
       }
     }

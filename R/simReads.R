@@ -35,20 +35,22 @@ simReads <- function(islandid, nSimReads, pis, rl, seed, writeBam, distrs, genom
   ans
 }
 
+
 splitPaths <- function(paths, DB, mc.cores, stranded, geneid){
-  paths <- paths[grepl("^\\..*\\.$", names(paths))]
-  sel <- strsplit(names(paths), split='-|\\.')
-  sel1 <- lapply(sel, "[", 2)
-  sel1 <- unlist(sel1)
-  islands <- DB@islands[geneid]
-  nislEx <- elementLengths(islands)
-  nislEx <- rep(names(islands), nislEx)
-  islEx <- names(islands@unlistData)
-  names(islEx) <- nislEx
-  isl <- match(sel1, islEx)
-  isl <- names(islEx)[isl]
-  splCounts <- split(paths, isl)
-  splCounts <- lapply(splCounts, function(x) x[grepl("-", names(x))])
+    paths <- paths[grepl("^\\..*\\.$", names(paths))]
+    sel <- strsplit(names(paths), split='-|\\.')
+    sel <- lapply(sel, function(x) x[x!=''])
+    sel1 <- lapply(sel, "[", 2)
+    sel1 <- unlist(sel1)
+    islands <- DB@islands[geneid]
+    nislEx <- elementLengths(islands)
+    nislEx <- rep(names(islands), nislEx)
+    islEx <- names(islands@unlistData)
+    names(islEx) <- nislEx
+    isl <- match(sel1, islEx)
+    isl <- names(islEx)[isl]
+    splCounts <- split(paths, isl)
+    splCounts <- lapply(splCounts, function(x) x[grepl("-", names(x))])
   if(DB@denovo){
     sel <- lapply(sel, "[", -1)
     tmp <- split(sel, isl)
@@ -150,10 +152,10 @@ casperSim <- function(genomeDB, distrs, nSimReads, pis, islandid, lr_file=NULL, 
   if (verbose) cat("Simulating fragments\n")
 # insideBam deprecated, only in case it is useful in simulations, return from C all information written to the bam file
   insideBam=as.integer(0)
+  #browser()
 
-
-#  dyn.load("/Volumes/biostats/cstephan/casper_bioC/casper/src/casper.so")
-#  source("/Volumes/biostats/cstephan/casper_bioC/casper/R/simPost.R")
+  #dyn.load("/Volumes/biostats/cstephan/casper_bioC/casper/src/casper.so")
+  #source("/Volumes/biostats/cstephan/casper_bioC/casper/R/simPost.R")
   ans <- .Call("casperSimC", ge, ve, vn, as.integer(vl), en, es, ee, ei, ldv, ldd, sdv, sdd, as.integer(rl), length(ge), as.integer(tx_strand), lr_file, chroms, as.integer(seed), as.integer(bam), as.integer(insideBam), as.integer(verbose))
 
 #pdf("try.dis.pdf");plot(density(ans[[3]]), xlim=c(0,500));lines(density(ans2[[3]]), col=2);lines(density(ans3[[3]]), col=3);dev.off()

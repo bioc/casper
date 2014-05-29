@@ -1,6 +1,5 @@
 \name{wrapKnown}
 \alias{wrapKnown}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
   Run all necessary steps to analyze a bam file with the casper pipeline.
 }
@@ -90,18 +89,12 @@ keep.multihits=TRUE, chroms=NULL)
 }
 
 \details{
-  %%  ~~ If necessary, more details than the description above ~~
   Function executes the functions procBam, getDistrs and pathCounts
   for each chromosome. Once finished, distributions are merged and
   expressions computed. Distributions, processed reads, path counts and
   expression estimates are returned.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
 \item{distr}{Object of class \code{readDistrs}}
 \item{pbam}{List of objects of class \code{procBam} with one element
   per chromosome}
@@ -115,9 +108,9 @@ keep.multihits=TRUE, chroms=NULL)
 Rossell D, Stephan-Otto Attolini C, Kroiss M, Stocker A. Quantifying Alternative Splicing from Paired-End
 RNA-sequencing data. Annals of Applied Statistics, 8(1):309-330.
 }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+\seealso{
+\code{procGenome}, \code{relexprByGene}
+}
 \examples{
 ## genDB<-makeTranscriptDbFromUCSC(genome="hg19", tablename="refGene")
 ## hg19DB <- procGenome(genDB, "hg19")

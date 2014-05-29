@@ -15,7 +15,7 @@ mergePCs <- function(pcs, genomeDB, mc.cores=1){
       new("pathCounts", counts=counts, denovo=pcs[[1]]@denovo, stranded=pcs[[1]]@stranded)
   }
 
-simMAE <- function(nsim, islandid=NULL, n, r, f, burnin=1000, pc, disArray, usePilot=FALSE, retTxsError=FALSE, genomeDB, mc.cores=1, mc.cores.int=1, verbose=FALSE) {
+simMAE <- function(nsim, islandid=NULL, n, r, f, burnin=1000, pc, disArray, usePilot=FALSE, retTxsError=FALSE, genomeDB, mc.cores=1, mc.cores.int=1, verbose=FALSE, obs.distr, obs.rl) {
    if (length(r) != length(n)) stop("length(n) not equal to length(r)")
    if(is.null(islandid)) islandid <- names(genomeDB@transcripts)
    U <- NULL
@@ -27,7 +27,7 @@ simMAE <- function(nsim, islandid=NULL, n, r, f, burnin=1000, pc, disArray, useP
      #nmean <- f[j] - nmean
      #names(d@lenDis) <- as.numeric(names(d@lenDis)) + round(nmean)
      if(verbose) cat(paste("Generating posterior samples j =",j, "\n"))
-      pis <- simPost(islandid=islandid, nsim=nsim, distrs=distrs, genomeDB=genomeDB, pc=pc, readLength=r[j], mc.cores=mc.cores.int*mc.cores, verbose=verbose)
+      pis <- simPost(islandid=islandid, nsim=nsim, distrs=obs.distr, genomeDB=genomeDB, pc=pc, readLength=obs.rl, mc.cores=mc.cores.int*mc.cores, verbose=verbose)
      if(verbose) cat(paste("Running simulations for j =",j, "\n"))
      if(mc.cores.int>1) {
        require(parallel)
@@ -45,23 +45,20 @@ simMAE <- function(nsim, islandid=NULL, n, r, f, burnin=1000, pc, disArray, useP
          list(maes=abs(sim.exp[colnames(pis),]-pis[i,]), pc=sim.pc$pc)
        })
      }
-     tmp <- lapply(res, '[[', 'maes')
-     sel <- unlist(lapply(tmp, length))==nsim
-     tmp <- tmp[sel]
-     #Un <- do.call(cbind, lapply(res, "[[", "maes"))
-     Un <- do.call(cbind, tmp)
+     Un <- do.call(cbind, lapply(res, "[[", "maes"))
      df <- data.frame(MAE= colMeans(Un), Nreads=rep(n[j], nsim), ReadLength=rep(r[j], nsim), frLength=rep(f[j], nsim))
      U <- rbind(U, df)
      if(retTxsError) {
        rownames(Un) <- colnames(pis)
        txe[[j]] <- Un
-       pcs[[j]] <- lapply(res[sel], "[[", "pc")
+      # pcs[[j]] <- lapply(res[sel], "[[", "pc")
+         pcs[[j]] <- lapply(res, '[[', 'pc')
      }
    }
    if(retTxsError){
-     names(txe) <- paste(n, r, f, sep='-')[sel]
-     names(pcs) <- paste(n, r, f, sep='-')[sel]
-     return(list(txe=txe, U=U, pcs=pcs))
+     names(txe) <- paste(n, r, f, sep='-')
+     names(pcs) <- paste(n, r, f, sep='-')
+     return(list(txe=txe, U=U, pcs=pcs, pis=pis))
    }
    return(U)
 }

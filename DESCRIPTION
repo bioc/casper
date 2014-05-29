@@ -1,6 +1,6 @@
 Package: casper
-Version: 1.8.0
-Date: 2014-04-30
+Version: 1.9.0
+Date: 2014-05-29
 Title: Characterization of Alternative Splicing based on Paired-End
         Reads
 Author: David Rossell, Camille Stephan-Otto, Manuel Kroiss, Miranda
@@ -20,7 +20,7 @@ Collate: GenericDefs.R ClassDefinitions.R calcDenovo.R calcExp.R
         createDenovoGenome.R genePlot.R getDistrs.R getRoc.R
         denovoExpr.R makeTranscriptDbFromGFF.R mergeBatches.R mergeExp.R modelPrior.R
         pathCounts.R probNonEquiv.R procBam.R procGenome.R
-        rmShortInserts.R simMultSamples.R simPost.R simReads.R
+        relexprByGene.R rmShortInserts.R simMultSamples.R simPost.R simReads.R
         splitGenomeByLength.R truncnorm.R wrapKnown.R
 biocViews: GeneExpression, DifferentialExpression, Transcription,
         RNASeq, Sequencing

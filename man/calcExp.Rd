@@ -51,6 +51,9 @@ priorqGeneExpr=2, citype="none", niter=10^3, burnin=100, mc.cores=1, verbose=FAL
 Rossell D, Stephan-Otto Attolini C, Kroiss M, Stocker A. Quantifying Alternative Splicing from Paired-End
 RNA-sequencing data. Annals of Applied Statistics, 8(1):309-330.
 }
+\seealso{
+\code{relexprByGene}
+}
 \author{
   Camille Stephan-Otto Attolini, Manuel Kroiss, David Rossell
 }
@@ -71,6 +74,10 @@ pc <- pathCounts(pbam0, DB=hg19DB)
 eset <- calcExp(distrs=distrs, genomeDB=hg19DB, pc=pc, readLength=75, rpkm=FALSE)
 head(exprs(eset))
 head(fData(eset))
+
+#Re-normalize relative expression to add up to 1 within gene_id rather
+# than island_id
+eset <- relexprByGene(eset)
 
 #Add fake sample by permuting and combine
 eset2 <- eset[sample(1:nrow(eset),replace=FALSE),]

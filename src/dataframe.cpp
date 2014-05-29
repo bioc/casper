@@ -171,71 +171,62 @@ double DataFrame::probability(Variant* v, Fragment* f)
 
 
 
-double DataFrame::prob(int fs, int fe, int bs, int be, int* pos, double T)
+double DataFrame::prob(int fs, int fe, int bs, int be, int* pos, double T) {
 
-{
+  int vals, readLength; 
+  double probs;
+  DiscreteDF* lengthDist;
 
-	// lower bound for start of left transcript
+  if (T <= fraglen_minx) {  //if shortest fragment longer than current transcript
+    vals= (int) T; 
+    probs=1;
+    lengthDist= new DiscreteDF(&probs,&vals,1);
+  } else {
+    lengthDist= fraglen_dist;
+  }
 
-	double a1 = max(pos[fs], pos[fe] - frag_readlen + 1);
+  if ((2*frag_readlen) > ((int) T)) { //if left+right read don't fit in current transcript
+    readLength= ((int) T)/2;
+  } else {
+    readLength= frag_readlen;
+  }
 
-	// upper bound for start of left transcript
+  // lower bound for start of left transcript
+  double a1 = max(pos[fs], pos[fe] - readLength + 1);
+  // upper bound for start of left transcript
+  double b1 = min(pos[fs + 1] - 1, pos[fe + 1] - readLength);
+  // lower bound for start of right transcript
+  double a2 = max(pos[bs] + readLength, pos[be] + 1);
+  // upper bound for start of right transcript
+  double b2 = min(pos[bs + 1] + readLength - 1, pos[be + 1]);
 
-	double b1 = min(pos[fs + 1] - 1, pos[fe + 1] - frag_readlen);
+  double psum = 0;
+  for (int i=0; i< lengthDist->size; i++) { //stop before T
 
-	// lower bound for start of right transcript
+    double l= lengthDist->value(i);
+    double mb= (T-l+1.0)/T;
+    double rb = min(min(b1, b2 - l) / T, mb);
+    double lb = min((max(a1, a2 - l) - 1.0) / T, mb);
 
-	double a2 = max(pos[bs] + frag_readlen, pos[be] + 1);
+    if (lb >= rb) { continue; }
 
-	// upper bound for start of right transcript
+    double punc = (fragsta_cumu(rb) - fragsta_cumu(lb)) / fragsta_cumu(mb);
+    double factor = 0;
 
-	double b2 = min(pos[bs + 1] + frag_readlen - 1, pos[be + 1]);
+    if (l <= T && punc > 0) {
+      factor = lengthDist->probability(i);
+      if ((T < fraglen_maxx) && (T > fraglen_minx)) { factor /= lengthDist->cumulativeProbability((int)(T-fraglen_minx)); }
+    }
 
-	double psum = 0;
+    psum += punc * factor;
 
-	
+  }
 
-        for (int i=0; i< fraglen_dist->size; i++) { //stop before T
+  if (T <= fraglen_minx) { 
+    delete lengthDist; 
+  }
 
-	  double l= fraglen_dist->value(i);
-
-	  double mb= (T-l+1.0)/T; 
-
-	  //double mb = 1.0 - l / T;
-
-	  double rb = min(min(b1, b2 - l) / T, mb);
-
-	  double lb = min((max(a1, a2 - l) - 1.0) / T, mb);
-
-	  if (lb >= rb) { continue; }
-
-
-
-	  double punc = (fragsta_cumu(rb) - fragsta_cumu(lb)) / fragsta_cumu(mb);
-
-	  
-
-	  double factor = 0;
-
-	  if (l <= T && punc > 0) {
-
-	    factor = fraglen_dist->probability(i);
-
-	    
-
-	    if (T < fraglen_maxx) {
-
-	      factor /= fraglen_dist->cumulativeProbability((int)(T-fraglen_minx));
-
-	    }
-
-	  }
-
-	  psum += punc * factor;
-
-	}
-
-	return psum;
+  return psum;
 
 }
 

@@ -1,15 +1,15 @@
 logrpkm2thpi <- function(txids, lrpkm, genomeDB) {
-  #txids: data.frame with transcript, gene
+  #txids: data.frame with transcript, island_id
   #lrpkm: matrix with expression levels measured in logrpkm. rownames must indicate tx name
   #genomeDB: annotatedGenome
   rownames(txids) <- as.character(txids$transcript)
   txids <- txids[rownames(lrpkm),]
   len <- genomeDB@txLength[rownames(lrpkm)]
-  thpi <- data.frame(txids[,c('transcript','gene')], exp(lrpkm) * len / 10^9)
+  thpi <- data.frame(txids[,c('transcript','island_id')], exp(lrpkm) * len / 10^9)
   thpi[,-1:-2] <- t(t(thpi[,-1:-2,drop=FALSE])/colSums(thpi[,-1:-2,drop=FALSE]))
-  th <- aggregate(thpi[,-1:-ncol(txids),drop=FALSE], by=list(thpi$gene), FUN=sum)
-  names(th)[1] <- 'gene'
-  thpi <- merge(thpi, th, by='gene')
+  th <- aggregate(thpi[,-1:-ncol(txids),drop=FALSE], by=list(thpi$island_id), FUN=sum)
+  names(th)[1] <- 'island_id'
+  thpi <- merge(thpi, th, by='island_id')
   pi <- thpi[,3:(2+ncol(lrpkm)),drop=FALSE] / thpi[,(3+ncol(lrpkm)):ncol(thpi),drop=FALSE]
   rownames(pi) <- thpi$transcript; colnames(pi) <- colnames(lrpkm)
   pi <- pi[rownames(lrpkm),]
@@ -18,14 +18,14 @@ logrpkm2thpi <- function(txids, lrpkm, genomeDB) {
 
 
 logrpkm <- function(txids, th, pi, genomeDB, len) {
-  #txids: data.frame with transcript, gene
-  #th: data.frame with gene and proportion/probability of reads from each gene
+  #txids: data.frame with transcript, island_id
+  #th: data.frame with island_id and proportion/probability of reads from each island_id
   #pi: matrix with relative expression of each isoform, rownames must indicate tx identifier
   #genomeDB: annotatedGenome (not needed if len is provided)
   #len: named vector with transcript lengths (not needed if genomeDB is provided)
-  txids$gene <- as.character(txids$gene)
-  th$gene <- as.character(th$gene)
-  th <- merge(txids[,c('transcript','gene')], th, by='gene')
+  txids$island_id <- as.character(txids$island_id)
+  th$island_id <- as.character(th$island_id)
+  th <- merge(txids[,c('transcript','island_id')], th, by='island_id')
   rownames(th) <- as.character(th$transcript)
   th <- th[rownames(pi),,drop=FALSE]
   if (missing(len)) { len <- genomeDB@txLength[rownames(pi)] } else { len <- len[rownames(pi)] }
@@ -55,16 +55,16 @@ simMultSamples <- function(B, nsamples, nreads, readLength, x, groups='group', d
   groupsnew <- rep(unique(pData(x)[,groups]), nsamples)
   nnfit <- fitNNSingleHyp(x, groups=groups, B=5, trace=FALSE)
   ans <- vector("list",B)
-  if (verbose) cat(paste("Obtaining ",B," simulations (",sum(nsamples)," samples with ",nreads," reads each)\n",sep=''))
+  if (verbose) cat(paste("Obtaining ",B," simulations (",sum(nsamples)," samples with ",nreads," reads each -- some will be non-mappable depending on readLength)\n",sep=''))
   for (k in 1:B) {
     xnew <- simnewsamplesNoisyObs(nnfit, groupsnew=groupsnew, x=x, groups=groups, sigma2ErrorObs=sigma2ErrorObs)
     sampleNames(xnew) <- paste("Sample",1:ncol(xnew))
     featureNames(xnew) <- featureNames(x)
     # fData(xnew), simulated (phi, mu1, mu2)
     # xnew: simulated (unobservable) expressions for new individuals
-    thpi <- logrpkm2thpi(txids=fData(x)[,c('transcript','gene')], lrpkm=exprs(xnew), genomeDB=genomeDB)
+    thpi <- logrpkm2thpi(txids=fData(x)[,c('transcript','island_id')], lrpkm=exprs(xnew), genomeDB=genomeDB)
     N <- apply(thpi$th[,-1], 2, function(x) rmultinom(size=nreads, n=1, prob=x))
-    rownames(N) <- as.character(thpi$th$gene)
+    rownames(N) <- as.character(thpi$th$island_id)
     if (mc.cores>1) {
       if ('parallel' %in% loadedNamespaces()) {
         sim.exp <- parallel::mclapply(1:ncol(xnew), simOneExp, distrs=distrs, N=N, pis=thpi$pi, readLength=readLength, genomeDB=genomeDB, featnames=featureNames(xnew), seed=seed, verbose=verbose, mc.cores=mc.cores, mc.preschedule=FALSE)
@@ -90,9 +90,35 @@ simMultSamples <- function(B, nsamples, nreads, readLength, x, groups='group', d
 } 
 
 
+probNonMappable <- function(readLength) {
+  #Proportion of non-mappable reads
+  #Read length vs mappability following log-log law, taken from Li, Freudenberg & Miramontes (BMC Bioinformatics, 2014)
+  #Note: this is for a single sequence of length readLength. For paired-ends set 2*readLength as an approx
+  r <- c(20,50,80,100,150,400,500,1000)
+  p <- c(0.2835,0.0816,0.0426,0.034,0.0244,0.0133,0.0118,0.0082)
+  if ((readLength>=r[1]) && (readLength<=r[length(r)])) {
+    sel <- which(r>readLength)[1]
+    rlow <- r[sel-1]; rup <- r[sel] 
+    plow <- p[sel-1]; pup <- p[sel] 
+  } else if (readLength>r[length(r)]) {
+    rlow <- r[length(r)-1]; rup <- r[length(r)]
+    plow <- p[length(r)-1]; pup <- p[length(r)]
+  } else {
+    rlow <- r[1]; rup <- r[2]
+    plow <- p[1]; pup <- p[2]
+  }
+  ans <- exp(log(plow) + (log(readLength)-log(rlow)) * (log(pup)-log(plow))/(log(rup)-log(rlow)))
+  if (ans<0) { ans <- 0 } else if (ans>1) { ans <- 1 }
+  return(ans)
+}
+
 simOneExp <- function(i, distrs, N, pis, readLength, genomeDB, featnames, seed, verbose) {
   #Simulate a single sample
   if (is.list(distrs)) distrsCur <- sample(distrs, 1)[[1]] else distrsCur <- distrs
+  readYield <- runif(1,0.8,1.2) #actual reads produced +/- 20% within target
+  pmapped <- (1-probNonMappable(readLength)) * runif(1,0.6,0.9)  #proportion mapped reads 60%-90% of mappable reads
+  N <- round(N*readYield*pmapped)
+  
   nSimReads <- N[which(N[,i] != 0),i]
   islandid <- names(nSimReads)
   curpis <- pis[,i]; names(curpis) <- rownames(pis)

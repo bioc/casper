@@ -35,6 +35,16 @@ setMethod("exprs", signature(object="simulatedSamples"), function(object) {
 }
 )
 
+setMethod("[", signature(x="simulatedSamples"), function(x, i, ...) {
+  new("simulatedSamples", lapply(x,'[')[i])
+}
+)
+
+setMethod("[", signature(x="simulatedSamples",i="missing",j="index",drop="missing"), function(x, i, j, ..., drop) {
+  new("simulatedSamples", lapply(x, function(z) { z$simExpr <- z$simExpr[,j]; return(z) }))
+}
+)
+
 
 ###############################################################
 
