@@ -14,7 +14,7 @@ importFrom(rtracklayer, import)
 importFrom(sqldf, sqldf)
 importFrom(survival,Surv,survfit)
 importMethodsFrom(VGAM, Coef, model.matrix, predict)
-importFrom(VGAM,vglm,betabinomial.ab)
+importFrom(VGAM,vglm,betabinomial)
 
 #export regular functions
 export(asymmetryCheck, calcDenovo, calcExp, casperDesign, createDenovoGenome, denovoExpr, getDistrs, getIsland, genePlot, getRoc, mergeBatches, mergeExp, modelPrior, pathCounts, plotPriorAS, posprob, probNonEquiv, procBam, procGenome, pvalTreat, qqnormGenomeWide, quantileNorm, relativeExpr, relexprByGene, rmShortInserts, simMAE, simMultSamples, simReads, transcripts, variants, "variants<-", getReads, getNreads, getChr, getIsland, subsetGenome, txLength, wrapKnown, simMAE, simMAEcheck)
