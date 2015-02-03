@@ -4,17 +4,24 @@ variantMargExpr <- function(x,minProbExpr=0.5, minExpr=0.05) {
   # - minProbExpr: variants with marginal post prob < minProbExpr are not reported
   # - minExpr: variants with expression < minExpr are not reported
   # Note: at least one variant is always reported. If no variants satisfy minProbExpr and minExpr, the variant with largest expression is reported
-  pospr <- x@posprob$posprob/sum(x@posprob$posprob)
-  names(pospr) <- x@posprob$model
-  pospr <- pospr[as.character(x@expression$model)]
-  ans <- by(data.frame(pospr*x@expression$expr,pospr),INDICES=list(var=x@expression$varName),FUN=colSums,simplify=FALSE)
-  n <- names(ans)
-  ans <- matrix(unlist(ans),ncol=2,byrow=TRUE)
-  colnames(ans) <- c('expr','probExpressed')
-  rownames(ans) <- n
-  sel <- ans[,'probExpressed']>minProbExpr & ans[,'expr']>minExpr
-  if (any(sel)) ans <- ans[sel,,drop=FALSE] else ans <- ans[which.max(ans[,'expr']),,drop=FALSE]
-  ans[,'expr'] <- ans[,'expr']/sum(ans[,'expr'])
+  if(!(all(is.na(x@posprob$posprob))))
+  {
+      pospr <- x@posprob$posprob/sum(x@posprob$posprob)
+      names(pospr) <- x@posprob$model
+      pospr <- pospr[as.character(x@expression$model)]
+      ans <- by(data.frame(pospr*x@expression$expr,pospr),INDICES=list(var=x@expression$varName),FUN=colSums,simplify=FALSE)
+      n <- names(ans)
+      ans <- matrix(unlist(ans),ncol=2,byrow=TRUE)
+      colnames(ans) <- c('expr','probExpressed')
+      rownames(ans) <- n
+      sel <- ans[,'probExpressed']>minProbExpr & ans[,'expr']>minExpr
+      if (any(sel)) ans <- ans[sel,,drop=FALSE] else ans <- ans[which.max(ans[,'expr']),,drop=FALSE]
+      ans[,'expr'] <- ans[,'expr']/sum(ans[,'expr'])
+  }
+  else
+  {
+      ans <- NULL
+  }
   return(ans)
 }
 
@@ -23,19 +30,37 @@ relativeExpr <- function(expr, summarize='modelAvg', minProbExpr=0.5, minExpr=0.
   if (!(summarize %in% c("bestModel", "modelAvg"))) stop("summarize must be one of 'bestModel' or 'modelAvg'")
   if (summarize=='bestModel'){
     ans <- lapply(as.list(expr), function(x){
-      best <- x@posprob$model[which.max(x@posprob$posprob)]
-      exp <- x@expression[x@expression$model==best,]
-      res <- exp$expr
-      names(res) <- exp$varName
-      res
+      
+      if(!(all(is.na(x@posprob$posprob))))
+      {
+        pospr <- x@posprob$posprob
+        names(pospr) <- x@posprob$model
+        
+        bestModel <- x@posprob$model[which.max(x@posprob$posprob)]
+        pospr <- pospr[as.character(bestModel)]
+        
+        expr2var <- x@expression[x@expression$model==bestModel,]
+        
+        ans <- matrix(nrow=length(expr2var$varName),ncol=2,byrow=TRUE)
+        colnames(ans) <- c('expr','probExpressed')
+        rownames(ans) <- expr2var$varName
+        ans[,"expr"] <- expr2var$expr
+        ans[,"probExpressed"] <- rep(pospr, length(expr2var$varName))
+        return(ans)    
+      }
+      else
+      {
+        ans <- NULL
+      }
     })
-    ans <- do.call(c, unname(ans))
+    ans <- do.call("rbind", unname(ans))
   } else {
     ans <- lapply(as.list(expr), variantMargExpr, minProbExpr=minProbExpr, minExpr=minExpr)
     ans <- do.call("rbind", unname(ans))
   }
   ans
 }
+
 
 
 

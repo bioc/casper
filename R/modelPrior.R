@@ -77,37 +77,41 @@ setMethod("plotPriorAS",signature(object='modelPriorAS'), function(object,type='
 modelPrior <- function(genomeDB, maxExons=40, smooth=TRUE, verbose=TRUE) {
   if (class(genomeDB) != "annotatedGenome") stop("genomeDB must be of class 'annotatedGenome'")
   if(genomeDB@denovo) stop("genomeDB must be a known (not denovo) genome")
-  
   if (verbose) cat("Counting number of annotated transcripts per gene... ")
   # - Compute table txsvPerGene, which counts the nb of annotated transcripts per gene with 1,2... exons.
   #   rows correspond to nb of exons in the gene, columns to nb of annotated transcripts
-
   aliases <- genomeDB@aliases
   txs <- unlist(genomeDB@transcripts, recursive=F)
   names(txs) <- sub("[0-9]+\\.", "", names(txs))
   aliases$len <- txs[as.character(aliases$tx)]
   txpergene <- table(aliases$gene_id)
   nexpergene <- tapply(aliases$len, aliases$gene_id, function(x) length(unique(unlist(x))))
-  txsPerGene <- table(nexpergene[names(txpergene)], txpergene)
-
+  nexpergene <- nexpergene[nexpergene>0]
+  nn <- names(txpergene)[names(txpergene) %in% names(nexpergene)]
+  txsPerGene <- table(nexpergene[nn], txpergene[nn])
   if (verbose) cat("Done.\n")
-
   if (verbose) cat("Counting number of exons contained in each variant... ")  
   # - Compute table exonsPerGene, which counts the nb of exons contained in a variant for genes with 1,2,... exons.
   #   rows correspond to nb of exons in the gene, columns to nb of exons
-
   expertx <- unlist(lapply(aliases$len, length))
   expergeneTx <- nexpergene[aliases$gene_id]
   names(expergeneTx) <- aliases$tx_name
   exonsPerGene <- table(expergeneTx[names(expertx)], expertx)
-
   if (verbose) cat("Done.\n")
-
   if (verbose) cat("Estimating parameters... ")
-  nvarPrior <- nbVariantsDistrib(txsPerGene,maxExons=maxExons) #zero-truncated Negative Binomial fit
-  nexonPrior <- nbExonsDistrib(exonsPerGene,maxExons=maxExons) #Beta-Binomial fit
+  #Add pseudo-count of 1
+  tab <- txsPerGene
+  #tab <- matrix(0,nrow=nrow(txsPerGene),ncol=max(as.numeric(colnames(txsPerGene))))
+  #rownames(tab) <- rownames(txsPerGene); colnames(tab) <- 1:ncol(tab)
+  #tab[,colnames(txsPerGene)] <- tab[,colnames(txsPerGene)] + txsPerGene
+  #E <- as.numeric(rownames(tab)); ntx <- as.numeric(colnames(tab))
+  #for (i in 1:nrow(tab)) {
+  #  sel <- (log2(ntx) < E[i])
+  #  tab[i,sel] <- tab[i,sel]+1
+  #}
+  nvarPrior <- nbVariantsDistrib(tab,maxExons=maxExons) #zero-truncated Negative Binomial fit
+  nexonPrior <- nbExonsDistrib(exonsPerGene,maxExons=maxExons, smooth=smooth) #Beta-Binomial fit
   if (verbose) cat("Done.\n")
-  
   new("modelPriorAS",nvarPrior=nvarPrior,nexonPrior=nexonPrior)
 }
 
@@ -146,8 +150,8 @@ nbExonsDistrib <- function(tab,maxExons=40,smooth=TRUE) {
     ydf <- data.frame(succ=ydf,fail=as.numeric(n[i])-ydf-1)
     warn <- getOption("warn")
     options(warn= -1)
-    fit <- try(vglm(cbind(succ, fail) ~ 1, betabinomial, data=ydf, trace=FALSE), silent=TRUE)
-    #fit <- vglm(cbind(succ,fail) ~ 1, family=betabinomial, data=y, trace=FALSE)
+    #fit <- try(vglm(cbind(succ, fail) ~ 1, family=betabinomial.ab, data=ydf, trace=FALSE), silent=TRUE)
+    fit <- try(vglm(cbind(succ, fail) ~ 1, family=betabinomial, data=ydf, trace=FALSE), silent=TRUE)
     options(warn=warn)
 
     if ('try-error' %in% class(fit) | as.numeric(n[i])<=3) {
@@ -159,17 +163,18 @@ nbExonsDistrib <- function(tab,maxExons=40,smooth=TRUE) {
         bbpar[n[i],2] <- max(0.1, 1 - bbpar[n[i],1])
       }
     } else {
-      bbpar[n[i],] <- Coef(fit)
+      a <- as.numeric(Coef(fit)['mu']*(1/Coef(fit)['rho']-1))
+      b <- as.numeric((1/Coef(fit)['rho']-1)*(1-Coef(fit)['mu']))
+      bbpar[n[i],] <- c(a,b)
     }
   }
 
   #smooth parameter estimates for genes with >=10 exons
   if (smooth==TRUE) {
-    #require(mgcv)
     m <- bbpar[2:nrow(tab),1]/rowSums(bbpar)[2:nrow(tab)]
     m <- data.frame(logitm= log(m/(1-m)), E= as.numeric(rownames(bbpar)[2:nrow(tab)]))
     fit <- try(gam(logitm ~ s(E, sp= -1), data=m), silent=TRUE)
-    if (class(fit)!="try-error") {
+    if (!("try-error" %in% class(fit))) {
       msmooth <- 1/(1+exp(-predict(fit)))
       b <- data.frame(b=bbpar[2:nrow(tab),2], E= as.numeric(rownames(bbpar)[2:nrow(tab)]))
       fit <- gam(b ~ s(E, sp= -1), data=b, family=gaussian(link="log"))
@@ -183,7 +188,18 @@ nbExonsDistrib <- function(tab,maxExons=40,smooth=TRUE) {
   }
 
   bbpar[(nrow(tab)+1):nrow(bbpar),] <- rep(bbpar[nrow(tab),],each=nrow(bbpar)-nrow(tab))
-  
+
+  #Avoid MLE at boundary of space
+  sel <- rowSums(bbpar,na.rm=TRUE)>100
+  bbpar[sel,] <- 100*bbpar[sel,]/rowSums(bbpar[sel,])
+  sel <- rowSums(bbpar<0.01,na.rm=TRUE)>0
+  bbpar[sel,] <- bbpar[sel,] + 0.01
+
+  #Avoid missings
+  mfill <- colMeans(bbpar,na.rm=TRUE)
+  sel <- rowSums(is.na(bbpar))>0
+  bbpar[sel,1] <- mfill[1]; bbpar[sel,2] <- mfill[2]
+
   #predicted frequencies
   if ('1' %in% rownames(tab)) { names(pred)[1] <- names(obs)[1] <- '1'; obs[['1']] <- tab['1','1']; names(obs[['1']]) <- '1' }
   nkeep <- nrow(tab)+1
@@ -225,11 +241,10 @@ nbVariantsDistrib <- function(tab,maxExons=40) {
   # - nbpar: estimated Negative Binomial parameters (size: nb coin flips; prob: success prob)
   # - obs: list. Element i is the empirical distribution of nb variants for genes with i exons
   # - pred: list with predicted distributions
-  
   sel <- as.numeric(rownames(tab))>maxExons
   tab <- rbind(tab[!sel,],colSums(tab[sel,,drop=FALSE]))
   rownames(tab)[nrow(tab)] <- as.character(maxExons+1)
-  
+  #
   n <- as.numeric(colnames(tab))
   maxtxs <- log2(2^(as.numeric(rownames(tab))) - 1) #nb variants cannot be > 2^p -1
   nbpar <- matrix(NA,nrow=maxExons+1,ncol=2); colnames(nbpar) <- c('prob','size')
@@ -247,6 +262,16 @@ nbVariantsDistrib <- function(tab,maxExons=40) {
       nbpar[ichar[i],] <- nbpar[ichar[i-1],]
     }
     ymax <- max(as.numeric(names(y)))
+    #Avoid MLEs at the boundary
+    if (nbpar[ichar[i],'prob']>.99) {
+      m <- nbpar[ichar[i],'size']*(1-nbpar[ichar[i],'prob'])/nbpar[ichar[i],'prob']
+      nbpar[ichar[i],'prob'] <- .99
+      nbpar[ichar[i],'size'] <- m * nbpar[ichar[i],'prob'] / (1-nbpar[ichar[i],'prob'])
+    } else if (nbpar[ichar[i],'prob']<.01) {
+      m <- nbpar[ichar[i],'size']*(1-nbpar[ichar[i],'prob'])/nbpar[ichar[i],'prob']
+      nbpar[ichar[i],'prob'] <- .01
+      nbpar[ichar[i],'size'] <- m * nbpar[ichar[i],'prob'] / (1-nbpar[ichar[i],'prob'])
+    }
     p <- dnbinom(1:ymax,size=nbpar[ichar[i],'size'],prob=nbpar[ichar[i],'prob'])/dnbinom(0,size=nbpar[ichar[i],'size'],prob=nbpar[ichar[i],'prob'])
     pred[[ichar[i]]] <- sum(y)*p/sum(p)
     names(pred[[ichar[i]]]) <- 1:ymax
@@ -254,11 +279,9 @@ nbVariantsDistrib <- function(tab,maxExons=40) {
     obs[[ichar[i]]][is.na(obs[[ichar[i]]])] <- 0
     names(obs[[ichar[i]]]) <- names(pred[[ichar[i]]])
   }
-
   #Fill in missing values
   sel <- which(rowSums(is.na(nbpar))>0)
   if (length(sel)>0) { for (i in 1:length(sel)) nbpar[sel[i],] <- nbpar[sel[i]-1,] }
-  
   return(list(nbpar=nbpar,obs=obs,pred=pred))
 }
 

@@ -817,7 +817,7 @@ extern "C"
 
 
 
-  SEXP calcDenovoMultiple(SEXP exonsR, SEXP exonwidthR, SEXP transcriptsR, SEXP knownVarsR, SEXP geneidR, SEXP pathCountsR, SEXP fragstaR, SEXP fraglenR, SEXP lenvalsR, SEXP readLengthR, SEXP modelUnifPriorR, SEXP nvarPriorR, SEXP nexonPriorR, SEXP priorqR, SEXP minppR, SEXP selectBest, SEXP methodR, SEXP niterR, SEXP exactMarginalR, SEXP verboseR, SEXP integrateMethodR, SEXP strandR) 
+  SEXP calcDenovoMultiple(SEXP exonsR, SEXP exonwidthR, SEXP transcriptsR, SEXP knownVarsR, SEXP geneidR, SEXP pathCountsR, SEXP fragstaR, SEXP fraglenR, SEXP lenvalsR, SEXP readLengthR, SEXP modelUnifPriorR, SEXP nvarPriorR, SEXP nexonPriorR, SEXP prioradjR, SEXP priorqR, SEXP minppR, SEXP selectBest, SEXP methodR, SEXP niterR, SEXP exactMarginalR, SEXP verboseR, SEXP integrateMethodR, SEXP strandR) 
 
 	{
 
@@ -839,7 +839,7 @@ extern "C"
 
 		  int nexons = min(LENGTH(VECTOR_ELT(exonsR,i)), LENGTH(nvarPriorR));
 
-		  ansSingle= calcDenovoSingle(VECTOR_ELT(exonsR,i), VECTOR_ELT(exonwidthR,i), VECTOR_ELT(transcriptsR,i), VECTOR_ELT(knownVarsR,i), VECTOR_ELT(geneidR,i), VECTOR_ELT(pathCountsR,i), fragstaR, fraglenR, lenvalsR, readLengthR, modelUnifPriorR, VECTOR_ELT(nvarPriorR,nexons-1), VECTOR_ELT(nexonPriorR,nexons-1), priorqR, minppR, selectBest, methodR, VECTOR_ELT(niterR,i), exactMarginalR, integrateMethodR, VECTOR_ELT(strandR, i));
+		  ansSingle= calcDenovoSingle(VECTOR_ELT(exonsR,i), VECTOR_ELT(exonwidthR,i), VECTOR_ELT(transcriptsR,i), VECTOR_ELT(knownVarsR,i), VECTOR_ELT(geneidR,i), VECTOR_ELT(pathCountsR,i), fragstaR, fraglenR, lenvalsR, readLengthR, modelUnifPriorR, VECTOR_ELT(nvarPriorR,nexons-1), VECTOR_ELT(nexonPriorR,nexons-1), VECTOR_ELT(prioradjR,i), priorqR, minppR, selectBest, methodR, VECTOR_ELT(niterR,i), exactMarginalR, integrateMethodR, VECTOR_ELT(strandR, i));
 
 		  SET_VECTOR_ELT(ansMultiple,i,ansSingle);
 
@@ -857,7 +857,7 @@ extern "C"
 
 
 
-  SEXP calcDenovoSingle(SEXP exonsR, SEXP exonwidthR, SEXP transcriptsR, SEXP knownVarsR, SEXP geneidR, SEXP pathCountsR, SEXP fragstaR, SEXP fraglenR, SEXP lenvalsR, SEXP readLengthR, SEXP modelUnifPriorR, SEXP nvarPriorR, SEXP nexonPriorR, SEXP priorqR, SEXP minppR, SEXP selectBest, SEXP methodR, SEXP niterR, SEXP exactMarginalR, SEXP integrateMethodR, SEXP strandR) {
+  SEXP calcDenovoSingle(SEXP exonsR, SEXP exonwidthR, SEXP transcriptsR, SEXP knownVarsR, SEXP geneidR, SEXP pathCountsR, SEXP fragstaR, SEXP fraglenR, SEXP lenvalsR, SEXP readLengthR, SEXP modelUnifPriorR, SEXP nvarPriorR, SEXP nexonPriorR, SEXP prioradjR, SEXP priorqR, SEXP minppR, SEXP selectBest, SEXP methodR, SEXP niterR, SEXP exactMarginalR, SEXP integrateMethodR, SEXP strandR) {
 
 //De novo isoform discovery and estimate expression for a single gene
 //Input
@@ -873,6 +873,7 @@ extern "C"
 // - modelUnifPrior: when set to FALSE use a uniform prior on the model space (nvarPrior & nexonPrior are ignored)
 // - nvarPrior: vector with NegBinom parameters for prior prob of nb expressed variants
 // - nexonPrior: vector with Beta-Binomial param for prior prob of nb exons in a variant
+// - prioradjR: vector used to adjust prior probs. prioradj[0] has number of known isoforms for the gene, prioradj[1] mean number of used exons
 // - priorq: prior on model-specific parameters pi ~ Dirichlet(priorq)
 // - minpp: only models with post prob >= minpp are reported
 // - selectBest: set to !=0 to return only results for model with highest posterior probability
@@ -938,7 +939,7 @@ extern "C"
      
     } else {
      
-      seppl = new Seppel(df, &knownVars, REAL(nvarPriorR), REAL(nexonPriorR), INTEGER(integrateMethodR)[0]);
+      seppl = new Seppel(df, &knownVars, REAL(nvarPriorR), REAL(nexonPriorR), REAL(prioradjR), INTEGER(integrateMethodR)[0]);
      
     }
 

@@ -8,6 +8,7 @@
 #include "hash.h"
 #include "header.h"
 
+
 void build_genes(gene_t *genes, double *ve, int *vn, int *vl, int *en, int *es, int *ee, int *ei, int *txstr, int ngenes, SEXP chr){
   int i, j, k, varpos=0, expos=0, tmp;
   
@@ -58,7 +59,7 @@ int choose_gene(double *exp, int ngenes){
   int i;
   double ran, tmp=0;
 
-  ran = rand() / ( RAND_MAX + 1.0 );
+  ran = unif_rand();
    for(i=0; i<ngenes; i++){
      if((tmp<=ran) && (ran<tmp+exp[i])) return(i);
     tmp+=exp[i];
@@ -74,7 +75,7 @@ int choose_gene(double *exp, int ngenes){
 int choose_var(gene_t gene){
   int i;
   double ran, tmp=0;
-  ran = (double)rand() / (double)( RAND_MAX - 1);
+  ran = (double)unif_rand();  //rand() / (double)( RAND_MAX - 1);
   for(i=0; i<gene.nvar; i++){
     if((tmp<=ran) && (ran<tmp+gene.vars[i].exp)) return(i);
     tmp+=gene.vars[i].exp;
@@ -118,7 +119,7 @@ int choose_len(int varlen, double *ldv, double *ldd, int ldlen) {
     }
   }
   
-  ran = (rand() / ( RAND_MAX + 1.0 )) *maxp;
+  ran = (unif_rand() / ( RAND_MAX + 1.0 )) *maxp;
   if(ran<ldv[0]) return(ldd[0]);
   for(i=1; i<ldlen; i++) if((ldv[i-1]<=ran) && (ran < ldv[i])) return(ldd[i]);
   Rprintf("Error: no length chosen %f %f\n", ran, maxp);
@@ -136,7 +137,7 @@ int choose_st(int fraglen, int varlen, double *sdv, double *sdd, int sdlen, int 
   if(stdlen < 0) return(-1);
   if(stdlen==0) return(1);
   double maxp=cumu_fragsta((double)stdlen/(double)varlen, sdd, sdlen);  
-  double ran = ((double)rand() / (double) RAND_MAX)*maxp;
+  double ran = ((double)unif_rand() / (double) RAND_MAX)*maxp;
   return(((int)(cumu_fragsta(ran, sdv, sdlen)*varlen))+1);
 }
 

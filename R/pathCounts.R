@@ -109,7 +109,7 @@ setMethod("pathCounts", signature(reads='procBam'), function(reads, DB, mc.cores
   ans
 })
 setMethod("pathCounts", signature(reads='list'), function(reads, DB, mc.cores, verbose) {
-  ans <- mclapply(reads, function(x) pathCounts(x, DB=DB, mc.cores=1, verbose=verbose), mc.cores=mc.cores, mc.preschedulle=TRUE)
+  ans <- parallel::mclapply(reads, function(x) pathCounts(x, DB=DB, mc.cores=1, verbose=verbose), mc.cores=mc.cores, mc.preschedulle=TRUE)
   mergePC(pc=ans, DB=DB)
 })
           

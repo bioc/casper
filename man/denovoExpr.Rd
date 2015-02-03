@@ -66,10 +66,10 @@ distrs <- getDistrs(hg19DB,bam=bam0,readLength=75)
 pc <- pathCounts(pbam0, DB=hg19DB)
 
 #Set prior distrib on model space
-mprior <- modelPrior(hg19DB, maxExons = 40, smooth = TRUE, verbose=TRUE)
+mprior <- modelPrior(hg19DB, maxExons=40, smooth=FALSE)
 
 #Fit model
-denovo <- calcDenovo(distrs,genomeDB=hg19DB,pc=pc,readLength=75,priorq=3,mprior=mprior,minpp=0)
+denovo <- calcDenovo(distrs,targetGenomeDB=hg19DB,pc=pc,readLength=75,priorq=3,mprior=mprior,minpp=0)
 
 head(names(denovo))
 denovo[['6499']]

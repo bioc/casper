@@ -68,7 +68,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   
   int gene, var, len, *gansS, *vansS, *lansS, *strS, seed=INTEGER(rseed)[0], *pos, st;
   double *sansS;
-  srand(seed);
+
 
   SEXP gans, vans, lans, sans, ans, strs, qname, rname, strand, posr, cigar;
   PROTECT(gans = allocVector(INTSXP, n));

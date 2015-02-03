@@ -29,7 +29,6 @@ public:
 	Model(list<Variant*>* variants);
 	
 
-
 	// amount of variants in this model
 
 	int count();

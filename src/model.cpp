@@ -87,6 +87,7 @@ Model::Model(list<Variant*>* variants)
 
 
 
+
 bool Model::contains(Variant* v)
 
 {

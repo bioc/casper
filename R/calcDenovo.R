@@ -78,27 +78,25 @@ setMethod("variants", signature(object="denovoGenomeExpr"), function(object) {
 ## Function calcDenovo
 #########################################################################
 
-calcDenovo <- function(distrs, genomeDB, pc, readLength, islandid, priorq=3, mprior, minpp=0.001, selectBest=FALSE, method='auto', niter, exactMarginal=TRUE, integrateMethod='plugin', verbose=TRUE, mc.cores=1) {
+calcDenovo <- function(distrs, targetGenomeDB, knownGenomeDB=targetGenomeDB, pc, readLength, islandid, priorq=3, mprior, minpp=0.001, selectBest=FALSE, method='submodels', niter, exactMarginal=TRUE, integrateMethod='plugin', verbose=TRUE, mc.cores=1) {
   if (integrateMethod=='plugin') {
       integrateMethod <- as.integer(0)
   } else if (integrateMethod=='Laplace') {
       integrateMethod <- as.integer(1)
   } else { integrateMethod <- as.integer(2) }
   if (missing(readLength)) stop("readLength must be specified")
-  if (class(genomeDB)!='annotatedGenome') stop("genomeDB must be of class 'annotatedGenome'")
-  #if (!genomeDB@denovo) stop("genomeDB must be a de novo annotated genome. Use createDenovoGenome")
+  if (class(targetGenomeDB)!='annotatedGenome') stop("targetGenomeDB must be of class 'annotatedGenome'")
+  if (class(knownGenomeDB)!='annotatedGenome') stop("knownGenomeDB must be of class 'annotatedGenome'")
   if (class(pc)!="pathCounts") stop("pc must be of class 'pathCounts'")
-  #if (!pc@denovo) stop("pc must be computed using a genome annotated de novo")
-  if (!missing(mprior)) {
-    if (!all(c('nvarPrior','nexonPrior') %in% slotNames(mprior))) stop("Incorrect mprior. Please use modelPrior to generate it.")
-    modelUnifPrior <- as.integer(0)
-    nvarPrior <- as.list(data.frame(t(mprior@nvarPrior$nbpar)))
-    nexonPrior <- as.list(data.frame(t(mprior@nexonPrior$bbpar)))
-  } else {
-    nvarPrior <- list(nbpar=matrix(c(0,0),nrow=1),obs=NA,pred=NA)
-    nexonPrior <- list(bbpar=matrix(c(0,0),nrow=1),obs=NA,pred=NA)
-    modelUnifPrior <- as.integer(1)
-  }
+  if (missing(mprior)) { mprior <- modelPrior(knownGenomeDB, verbose=verbose) }
+  if (!all(c('nvarPrior','nexonPrior') %in% slotNames(mprior))) stop("Incorrect mprior. Please use modelPrior to generate it.")
+  modelUnifPrior <- as.integer(0)
+  nvarPrior <- as.list(data.frame(t(mprior@nvarPrior$nbpar)))
+  nexonPrior <- as.list(data.frame(t(mprior@nexonPrior$bbpar)))
+  #Set Uniform prior on the model space (deprecated)
+  #nvarPrior <- list(nbpar=matrix(c(0,0),nrow=1),obs=NA,pred=NA)
+  #nexonPrior <- list(bbpar=matrix(c(0,0),nrow=1),obs=NA,pred=NA)
+  #modelUnifPrior <- as.integer(1)
   if (!(method %in% c('auto','rwmcmc','priormcmc','allmodels','submodels'))) stop("method must be auto, rwmcmc, priormcmc, allmodels or submodels")
 
   #Format input
@@ -121,20 +119,25 @@ calcDenovo <- function(distrs, genomeDB, pc, readLength, islandid, priorq=3, mpr
   verbose <- as.integer(verbose)
   exactMarginal <- as.integer(exactMarginal)
   if (missing(islandid)) {
-    islandid <- names(genomeDB@islands)[elementLengths(genomeDB@islands)>1]
+    islandid <- names(targetGenomeDB@islands)[elementLengths(targetGenomeDB@islands)>1]
     islandid <- islandid[islandid %in% names(pc@counts[[1]])]
   }
-  if (!all(islandid %in% names(genomeDB@islands))) stop('islandid not found in genomeDB@islands')
+  else if(is.null(islandid))
+  {
+    islandid <- names(targetGenomeDB@islands)[elementLengths(targetGenomeDB@islands)>1]
+    islandid <- islandid[islandid %in% names(pc@counts[[1]])]
+  }
+  if (!all(islandid %in% names(targetGenomeDB@islands))) stop('islandid not found in targetGenomeDB@islands')
   if (!all(islandid %in% unlist(lapply(pc@counts, names)))) stop('islandid not found in pc')
-  if (!all(islandid %in% names(genomeDB@transcripts))) stop('islandid not found in genomeDB@transcripts')
-  exons <- as.integer(names(genomeDB@islands@unlistData))
-  names(exons) <- rep(names(genomeDB@islands), elementLengths(genomeDB@islands))
+  if (!all(islandid %in% names(targetGenomeDB@transcripts))) stop('islandid not found in targetGenomeDB@transcripts')
+  exons <- as.integer(names(targetGenomeDB@islands@unlistData))
+  names(exons) <- rep(names(targetGenomeDB@islands), elementLengths(targetGenomeDB@islands))
   exons <- split(unname(exons), names(exons))
-  exonwidth <- width(genomeDB@islands@unlistData)
-  names(exonwidth) <- rep(names(genomeDB@islands), elementLengths(genomeDB@islands))
+  exonwidth <- width(targetGenomeDB@islands@unlistData)
+  names(exonwidth) <- rep(names(targetGenomeDB@islands), elementLengths(targetGenomeDB@islands))
   exonwidth <- split(unname(exonwidth), names(exonwidth))
-  strand <- as.character(strand(genomeDB@islands@unlistData))[cumsum(c(1, elementLengths(genomeDB@islands)[-length(genomeDB@islands)]))]
-  names(strand) <- names(genomeDB@islands)
+  strand <- as.character(strand(targetGenomeDB@islands@unlistData))[cumsum(c(1, elementLengths(targetGenomeDB@islands)[-length(targetGenomeDB@islands)]))]
+  names(strand) <- names(targetGenomeDB@islands)
   
   if (missing(niter)) {
      niter <- as.list(as.integer(ifelse(sapply(exons,length)>20,10^3,10^4)))
@@ -142,14 +145,17 @@ calcDenovo <- function(distrs, genomeDB, pc, readLength, islandid, priorq=3, mpr
      niter <- as.list(as.integer(rep(niter[1],length(islandid))))
   }
   names(niter) <- islandid
+  if (length(targetGenomeDB@knownVars)>0) warning('knownVars in targetGenomeDB are not used by calcDenovo')
   
   #Define basic function
   f <- function(z) {
     islandid <- as.integer(z)
     exons <- exons[z]
     exonwidth <- exonwidth[z]
-    transcripts <- genomeDB@transcripts[z]
-    if (length(genomeDB@knownVars)>0) { knownVars <- genomeDB@knownVars[z] } else { knownVars <- lapply(1:length(z), function(z) character(0)) }
+    transcripts <- targetGenomeDB@transcripts[z]
+    prioradj <- lapply(knownGenomeDB@transcripts[z], function(zz) as.double(c(length(zz),mean(sapply(zz,length)))))
+    knownVars <- lapply(1:length(z), function(z) character(0))
+#    if (length(genomeDB@knownVars)>0) { knownVars <- genomeDB@knownVars[z] } else { knownVars <- lapply(1:length(z), function(z) character(0)) }
     tmp <- strand[z]
     strand <- vector(mode='integer', length=length(tmp))
     sel <- tmp=='+'
@@ -160,13 +166,13 @@ calcDenovo <- function(distrs, genomeDB, pc, readLength, islandid, priorq=3, mpr
     strand[sel] <- 0
     strand <- as.list(as.integer(strand))
     #pc <- pc[z] pc's have to be subset from previous step to deal with strandedness !!!!!!
-    ans <- calcDenovoMultiple(exons=exons,exonwidth=exonwidth,transcripts=transcripts,knownVars=knownVars,islandid=as.list(islandid),pc=pc@counts[[1]][z],startcdf=startcdf,lendis=lendis,lenvals=lenvals,readLength=readLength,modelUnifPrior=modelUnifPrior,nvarPrior=nvarPrior,nexonPrior=nexonPrior,priorq=priorq,minpp=minpp,selectBest=selectBest,method=method,niter=niter[z],exactMarginal=exactMarginal,verbose=verbose, integrateMethod=integrateMethod, strand=strand)
-    lapply(1:length(ans), function(y) formatDenovoOut(ans[[y]], genomeDB@islands[z][[y]]))
+    ans <- calcDenovoMultiple(exons=exons,exonwidth=exonwidth,transcripts=transcripts,knownVars=knownVars,islandid=as.list(islandid),pc=pc@counts[[1]][z],startcdf=startcdf,lendis=lendis,lenvals=lenvals,readLength=readLength,modelUnifPrior=modelUnifPrior,nvarPrior=nvarPrior,nexonPrior=nexonPrior,prioradj=prioradj,priorq=priorq,minpp=minpp,selectBest=selectBest,method=method,niter=niter[z],exactMarginal=exactMarginal,verbose=verbose, integrateMethod=integrateMethod, strand=strand)
+    lapply(1:length(ans), function(y) formatDenovoOut(ans[[y]], targetGenomeDB@islands[z][[y]]))
   }
 
   formatZeroExpr <- function(ids){
-    isl <- genomeDB@islands[ids]
-    txs <- genomeDB@transcripts[ids]
+    isl <- targetGenomeDB@islands[ids]
+    txs <- targetGenomeDB@transcripts[ids]
     exo <- lapply(txs, function(z) { ans <- cbind(names(z), sapply(z, paste, collapse=',')); colnames(ans) <- c('varName','exons'); rownames(ans) <- NULL; ans })
     expr <- lapply(exo, function(x) data.frame(model=rep(0, nrow(x)), expr=rep(1/nrow(x), nrow(x)), varName=x[,'varName']))
     posprob <- lapply(ids, function(x) data.frame(model=0, posprob=NA, priorprob=NA))
@@ -177,8 +183,9 @@ calcDenovo <- function(distrs, genomeDB, pc, readLength, islandid, priorq=3, mpr
   }
     
   runCalc <- function(islandid) {
-    sel <- !(sapply(pc@counts[[1]][islandid], is.null) | strand[islandid]=='*')
-    if (verbose==1) cat("Note: Islands with transcripts from both strands will not be processed at the moment\n")
+    sel <- !(sapply(pc@counts[[1]][islandid], is.null))
+    #sel <- !(sapply(pc@counts[[1]][islandid], is.null) | strand[islandid]=='*')
+    #if (verbose==1) cat("Note: Islands with transcripts from both strands will not be processed at the moment\n")
     all <- islandid
     islandid <- islandid[sel]
     if(sum(sel)==0) stop("No islands left to process due to strand or lack of path counts\n")
@@ -205,9 +212,9 @@ calcDenovo <- function(distrs, genomeDB, pc, readLength, islandid, priorq=3, mpr
   }
 
   #Initialize transcripts for new islands with known orientation
-  sel <- names(genomeDB@transcripts)[sapply(genomeDB@transcripts,is.null) & strand=='*']
-  if (length(sel)>0) genomeDB@transcripts[sel] <- tapply(as.integer(names(genomeDB@islands[sel]@unlistData)), rep(names(genomeDB@islands[sel]), elementLengths(genomeDB@islands[sel])), function(x) list(as.numeric(x))) 
-  islandidUnknown <- islandid[islandid %in% names(genomeDB@transcripts)[sapply(genomeDB@transcripts,is.null)]]
+  sel <- names(targetGenomeDB@transcripts)[sapply(targetGenomeDB@transcripts,is.null) & strand=='*']
+  if (length(sel)>0) targetGenomeDB@transcripts[sel] <- tapply(as.integer(names(targetGenomeDB@islands[sel]@unlistData)), rep(names(targetGenomeDB@islands[sel]), elementLengths(targetGenomeDB@islands[sel])), function(x) list(as.numeric(x))) 
+  islandidUnknown <- islandid[islandid %in% names(targetGenomeDB@transcripts)[sapply(targetGenomeDB@transcripts,is.null)]]
   if (length(islandidUnknown)>0) { islandidini <- islandid; islandid <- islandid[!(islandid %in% islandidUnknown)] }
 
 
@@ -221,12 +228,12 @@ calcDenovo <- function(distrs, genomeDB, pc, readLength, islandid, priorq=3, mpr
     if (length(islandid)>0) ans[islandid] <- runCalc(islandid)
     
     #Islands with unknown strand. Run 2 strands and select the one with largest post prob
-    genomeDB@transcripts[islandidUnknown] <- lapply(genomeDB@islands[islandidUnknown],function(z) list(var1=as.integer(names(z))))
+    targetGenomeDB@transcripts[islandidUnknown] <- lapply(targetGenomeDB@islands[islandidUnknown],function(z) list(var1=as.integer(names(z))))
     strand[islandidUnknown] <- '+'
     ansforw <- runCalc(islandidUnknown)
     strand[islandidUnknown] <- '-'
-    genomeDB@transcripts[islandidUnknown] <- lapply(genomeDB@transcripts[islandidUnknown],rev)
-    genomeDB@islands[islandidUnknown] <- lapply(genomeDB@islands[islandidUnknown], rev)
+    targetGenomeDB@transcripts[islandidUnknown] <- lapply(targetGenomeDB@transcripts[islandidUnknown],rev)
+    targetGenomeDB@islands[islandidUnknown] <- lapply(targetGenomeDB@islands[islandidUnknown], rev)
     exons[islandidUnknown] <- lapply(exons[islandidUnknown], rev)
     exonwidth[islandidUnknown] <- lapply(exonwidth[islandidUnknown], rev)
     ansrev <- runCalc(islandidUnknown)
@@ -244,7 +251,7 @@ calcDenovo <- function(distrs, genomeDB, pc, readLength, islandid, priorq=3, mpr
   rownames(fdata) <- as.character(fdata$transcript)
   tx <- strsplit(as.character(fdata$exons),split=',')
   tx <- data.frame(tx=rep(fdata$transcript, sapply(tx,length)) , exon=unlist(tx))
-  txLength <- txLengthBase(tx=tx, genomeDB=genomeDB)
+  txLength <- txLengthBase(tx=tx, genomeDB=targetGenomeDB)
   ans@txLength <- txLength
   return(ans)
 }
@@ -263,8 +270,8 @@ formatDenovoOut <- function(ans, genesel) {
   new("denovoGeneExpr",posprob=ans$posprob,expression=ans$expression,variants=ans$variants,integralSum=ans$integralSum,npathDeleted=ans$npathDeleted)
 }
 
-calcDenovoMultiple <- function(exons, exonwidth, transcripts, knownVars, islandid, pc, startcdf, lendis, lenvals, readLength, modelUnifPrior, nvarPrior, nexonPrior, priorq, minpp, selectBest, method, niter, exactMarginal, verbose, integrateMethod, strand) {
-  ans <- .Call("calcDenovoMultiple",exons,exonwidth,transcripts,knownVars,islandid,pc,startcdf,lendis,lenvals,readLength,modelUnifPrior,nvarPrior,nexonPrior,priorq,minpp,selectBest,method,niter,exactMarginal,verbose,integrateMethod,strand)
+calcDenovoMultiple <- function(exons, exonwidth, transcripts, knownVars, islandid, pc, startcdf, lendis, lenvals, readLength, modelUnifPrior, nvarPrior, nexonPrior, prioradj, priorq, minpp, selectBest, method, niter, exactMarginal, verbose, integrateMethod, strand) {
+  ans <- .Call("calcDenovoMultiple",exons,exonwidth,transcripts,knownVars,islandid,pc,startcdf,lendis,lenvals,readLength,modelUnifPrior,nvarPrior,nexonPrior,prioradj,priorq,minpp,selectBest,method,niter,exactMarginal,verbose,integrateMethod,strand)
   return(ans)
 }
 

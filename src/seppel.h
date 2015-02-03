@@ -10,7 +10,7 @@ public:
 
   Seppel(DataFrame* frame, set<Variant*>* knownVars, int integrateMethod=0);
 
-  Seppel(DataFrame* frame, set<Variant*>* knownVars, double* nvarPrior, double* nexonPrior, int integrateMethod=0);
+  Seppel(DataFrame* frame, set<Variant*>* knownVars, double* nvarPrior, double* nexonPrior, double* prioradj, int integrateMethod=0);
 
   ~Seppel();
 
@@ -34,7 +34,11 @@ public:
 
   void exploreSmart(Model* startmodel, int runs); // Metropolis-Hastings MCMC with random walk (uses SeppelSmartDist as proposal)
 
-  void exploreSubmodels(Model* model, int maxdropit, int maxmodels=1048576); //exhaustively consider submodels of a given model (up to a limit given by maxdropit)
+  void exploreSubmodels(Model* model, int maxdrops);  //Tree-based enumeration of submodels of model by dropping maxdrops variants
+
+  void exploreSubmodels(Model* model, vector<Variant*>* keepvars, vector<Variant*>* dropvars, bool eval_pp, int dropcount, int maxdrops); //same but forcing keepvars in the model
+
+  //  void exploreSubmodelsOld(Model* model, int maxdropit, int maxmodels=1048576); //exhaustively consider submodels of a given model (up to a limit given by maxdropit)
 
 
 	map<Model*, double*, ModelCmp> resultModes();

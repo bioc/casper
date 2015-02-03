@@ -238,12 +238,10 @@ double DataFrame::prob(int fs, int fe, int bs, int be, int* pos, double T) {
 int DataFrame::fixUnexplFrags(set<Variant*, VariantCmp>* initvars, std::map<Variant*,std::string>* varshortnames, int* geneid, int denovo) {
 
 	// copy all fragments
-
 	set<Fragment*>* queue = new set<Fragment*>(data.begin(), data.end());
 	set<Fragment*>::iterator itqueue;
 
 	// remove the fragments from the queue we can explain with our variants
-
 	set<Variant*, VariantCmp>::iterator vi;
 
 	for (vi = initvars->begin(); vi != initvars->end(); vi++) {
@@ -282,11 +280,8 @@ int DataFrame::fixUnexplFrags(set<Variant*, VariantCmp>* initvars, std::map<Vari
 	    path2Variants(&newvaris, &bestvaris, &allvarnames, &explained, initvars, frag); //propose new variants, add their names to allvarnames
 
 	    if (!explained) {
-
 	      discarded++;
-
 	      data.remove(frag);
-
 	    }
  
 	  }
@@ -532,7 +527,7 @@ Variant* DataFrame::path2Variant(Fragment* f)
 
 
 
-//For each variant in initvaris, add a new variant to newvaris strictly following the path set by f
+//For each variant in initvaris containing all exons in the path set by f, add a new variant to newvaris
 //
 // Input
 // - initvaris: initial set of variants that will act as templates for the new variants
@@ -556,153 +551,114 @@ void DataFrame::path2Variants(set<Variant*, VariantCmp> *newvaris, set<Variant*,
 
   for (itvarset = initvaris->begin(); itvarset != initvaris->end(); itvarset++) {
 
+    bool extendvar=true;
     int eid=0, curvarex, strand=1; Exon *ex; Variant *curvar= (*itvarset);
 
-    vector<Exon*>::iterator itexon;
+    //Check that variant contains all exons in the path
+    for (int i=0; (i<(f->leftc)) && extendvar; i++) {
+      ex= id2exon[f->left[i]];
+      if (!curvar->contains(ex)) { extendvar= false; }
+    }
 
-    vector<Exon*>* el = new vector<Exon*>();
+    for (int i=0; (i<(f->rightc)) && extendvar; i++) {
+      ex= id2exon[f->right[i]];
+      if (!curvar->contains(ex)) { extendvar= false; }
+    }
 
-    curvarex = 0; ex= (curvar->exons)[0];
+    if (extendvar) {
 
-    if(((f->leftc)>1) & (f->left[0]>f->left[1])) strand=-1;
-    if(((f->rightc)>1) & (f->right[0]>f->right[1])) strand=-1;
-    if((f->left[0] > f->right[0]) | (ex->id > (curvar->exons)[curvar->exonCount-1]->id)) strand=-1;
-
-    if(strand==1){
-      while ((curvarex < curvar->exonCount) && (ex->id < (f->left[0]))) {
-
-	el->push_back(ex);
-	
-	curvarex++;
-	
-	ex= (curvar->exons)[curvarex];
-	
-      }
-
-      for (int i=0; i< f->leftc; i++) {
-	
-	eid = f->left[i];
-	
-	if (id2exon.count(eid)>0) { ex = id2exon[eid]; } else { Rf_error("Exon %d in path counts not found in genomeDB!\n",eid); }
-	
-	el->push_back(ex);
-	
-      }
-      
-      for (int i=0; i< f->rightc; i++) {
-	
-	eid = f->right[i];
-	if (id2exon.count(eid)>0) { ex = id2exon[eid]; } else { Rf_error("Exon %d in path counts not found in genomeDB!\n",eid); }
-	
-	if (eid > f->left[f->leftc -1]) el->push_back(ex);
-	
-      }
-      
-      if (eid < ((curvar->exons)[curvar->exonCount -1])->id) {
-	
-	ex= (curvar->exons)[curvarex];
-	
-	while (ex->id <= eid) { curvarex++; ex= (curvar->exons)[curvarex]; }
-	
-	while ( curvarex < curvar->exonCount ) {
-	  
-	  el->push_back(ex);
+      vector<Exon*>::iterator itexon;
+      vector<Exon*>* el = new vector<Exon*>();
+      curvarex = 0; ex= (curvar->exons)[0];
        
-	  curvarex++;
-	  
-	  ex= (curvar->exons)[curvarex];
-	  
-	}
-	
-      } 
-    } else {
-
-      while ((curvarex < curvar->exonCount) && (ex->id > (f->left[0]))) {
-
-	el->push_back(ex);
-
-	curvarex++;
-
-	ex= (curvar->exons)[curvarex];
-
-      }
-
-      for (int i=0; i< f->leftc; i++) {
-
-	eid = f->left[i];
-
-	if (id2exon.count(eid)>0) { ex = id2exon[eid]; } else { Rf_error("Exon %d in path counts not found in genomeDB!\n",eid); }
-
-	el->push_back(ex);
-
-      }
-
-
-      for (int i=0; i< f->rightc; i++) {
-
-	eid = f->right[i];
-	if (id2exon.count(eid)>0) { ex = id2exon[eid]; } else { Rf_error("Exon %d in path counts not found in genomeDB!\n",eid); }
-
-        if (eid > f->left[f->leftc -1]) el->push_back(ex);
-
-      }
-
-      if (eid > ((curvar->exons)[curvar->exonCount -1])->id) {
-
-        ex= (curvar->exons)[curvarex];
-
-        while (ex->id >= eid) { curvarex++; ex= (curvar->exons)[curvarex]; }
-
-        while ( curvarex < curvar->exonCount ) {
-
-          el->push_back(ex);
-
-          curvarex++;
-
-          ex= (curvar->exons)[curvarex];
-
+      if(((f->leftc)>1) & (f->left[0]>f->left[1])) strand=-1;
+      if(((f->rightc)>1) & (f->right[0]>f->right[1])) strand=-1;
+      if((f->left[0] > f->right[0]) | (ex->id > (curvar->exons)[curvar->exonCount-1]->id)) strand=-1;
+       
+      if(strand==1){
+        while ((curvarex < curvar->exonCount) && (ex->id < (f->left[0]))) {
+       	el->push_back(ex);
+       	curvarex++;
+       	ex= (curvar->exons)[curvarex];
         }
-	
-      }
-
-    }
-	
-    if (el->size() > 0) {
-
-      Variant* v = new Variant(el);
-
-      if (allvarnames->count(v->exoncomb) == 0) {
-
-	allvarnames->insert(v->exoncomb);
-
-	double fragprob = probability(v, f);
-
-	if (fragprob > 0) {
-
-	  *explained = true;
-
-	  newvaris->insert(v);
-
-	  map<Fragment*, double> probs = probabilities(v);  //update cache with all path prob for new variant
-
-	  if (fragprob > maxprob) { maxprob= fragprob; bestvar= v; }
-
-	} else {
-
-	  delete v;
-
-	}
-
+       
+        for (int i=0; i< f->leftc; i++) {
+       	eid = f->left[i];
+       	if (id2exon.count(eid)>0) { ex = id2exon[eid]; } else { Rf_error("Exon %d in path counts not found in genomeDB!\n",eid); }
+       	el->push_back(ex);
+        }
+        
+        for (int i=0; i< f->rightc; i++) {
+       	eid = f->right[i];
+       	if (id2exon.count(eid)>0) { ex = id2exon[eid]; } else { Rf_error("Exon %d in path counts not found in genomeDB!\n",eid); }
+       	if (eid > f->left[f->leftc -1]) el->push_back(ex);
+        }
+        
+        if (eid < ((curvar->exons)[curvar->exonCount -1])->id) {
+       	ex= (curvar->exons)[curvarex];
+       	while (ex->id <= eid) { curvarex++; ex= (curvar->exons)[curvarex]; }
+       	while ( curvarex < curvar->exonCount ) {
+       	  el->push_back(ex);
+       	  curvarex++;
+       	  ex= (curvar->exons)[curvarex];
+       	}
+        } 
       } else {
-
-	delete v;
-
+       
+        while ((curvarex < curvar->exonCount) && (ex->id > (f->left[0]))) {
+       	el->push_back(ex);
+       	curvarex++;
+       	ex= (curvar->exons)[curvarex];
+        }
+       
+        for (int i=0; i< f->leftc; i++) {
+       	eid = f->left[i];
+       	if (id2exon.count(eid)>0) { ex = id2exon[eid]; } else { Rf_error("Exon %d in path counts not found in genomeDB!\n",eid); }
+       	el->push_back(ex);
+        }
+       
+       
+        for (int i=0; i< f->rightc; i++) {
+       	eid = f->right[i];
+       	if (id2exon.count(eid)>0) { ex = id2exon[eid]; } else { Rf_error("Exon %d in path counts not found in genomeDB!\n",eid); }
+          if (eid > f->left[f->leftc -1]) el->push_back(ex);
+        }
+       
+        if (eid > ((curvar->exons)[curvar->exonCount -1])->id) {
+          ex= (curvar->exons)[curvarex];
+          while (ex->id >= eid) { curvarex++; ex= (curvar->exons)[curvarex]; }
+          while ( curvarex < curvar->exonCount ) {
+            el->push_back(ex);
+            curvarex++;
+            ex= (curvar->exons)[curvarex];
+          }
+        }
+       
       }
-
-    }
-
-    delete el;
-
+       	
+      if (el->size() > 0) {
+       
+        Variant* v = new Variant(el);
+       
+        if (allvarnames->count(v->exoncomb) == 0) {
+	  allvarnames->insert(v->exoncomb);
+	  double fragprob = probability(v, f);
+	  if (fragprob > 0) {
+	    *explained = true;
+	    newvaris->insert(v);
+	    map<Fragment*, double> probs = probabilities(v);  //update cache with all path prob for new variant
+	    if (fragprob > maxprob) { maxprob= fragprob; bestvar= v; }
+	  } else {
+	    delete v;
+	  }
+        } else {
+	  delete v;
+        }
+       
+      }
+       
+      delete el;
+    }  //end if (extendvar)
   }
 
   if (*explained) bestvaris->insert(bestvar);

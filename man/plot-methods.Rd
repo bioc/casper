@@ -1,6 +1,8 @@
 \name{plot-methods}
 \docType{methods}
+\alias{plot}
 \alias{plot,readDistrs,ANY-method}
+\alias{lines}
 \alias{lines,readDistrs-method}
 \title{
 Plot estimated read start and fragment length distributions.
