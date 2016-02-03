@@ -183,7 +183,7 @@ setMethod("rangesPlot",signature(x='IRanges'),
       cover <- tail(cover, n=-runLength(cover)[1L])  # remove 1st run
       layout(c(2,1),heights=heights)
       par(oma=c(1,0,0,0),mar=c(2.1,.1,.1,.1))
-      genePlot(gene=gene, xlab='', ylab='', xlim=xlim, ...)
+      genePlot(gene, xlab='', ylab='', xlim=xlim, ...)
       sel <- width(x)<=maxFragLength
       if (exonProfile) {
         st <- c(start(x[sel]),start(x[!sel]),end(x[!sel])); en <- c(end(x[sel]),start(x[!sel]),end(x[!sel]))
@@ -215,14 +215,14 @@ setMethod("rangesPlot",signature(x='IRanges'),
 setMethod("rangesPlot",signature(x='GRanges',gene='IRanges'),
   function(x, gene, exonProfile=TRUE, maxFragLength=500, xlab='', ylab='', xlim, heights=c(2,1), ...) {
     if (missing(xlim)) xlim <- c(min(start(gene)),max(end(gene)))
-    rangesPlot(unlist(ranges(x)),gene=gene,exonProfile=exonProfile,maxFragLength=maxFragLength,xlab=xlab,ylab=ylab,xlim=xlim,heights=heights,...) 
+    rangesPlot(unlist(ranges(x)),gene=gene,exonProfile=exonProfile,maxFragLength=maxFragLength,xlab=xlab,ylab=ylab,xlim=xlim,heights=heights,...)
   }
 )
 
 setMethod("rangesPlot",signature(x='GRanges',gene='GRangesList'),
 function(x, gene, exonProfile=TRUE, maxFragLength=500, xlab='', ylab='', xlim, heights=c(2,1), ...) {
   if (missing(xlim)) xlim <- c(min(unlist(start(gene))),max(unlist(end(gene))))
-  rangesPlot(unlist(ranges(x)),gene=gene,exonProfile=exonProfile,maxFragLength=maxFragLength,xlab=xlab,ylab=ylab,xlim=xlim,heights=heights,...)  
+  rangesPlot(unlist(ranges(x)),gene=gene,exonProfile=exonProfile,maxFragLength=maxFragLength,xlab=xlab,ylab=ylab,xlim=xlim,heights=heights,...)
 }
 )
 
@@ -235,14 +235,14 @@ setMethod("rangesPlot",signature(x='procBam'),
     x <- x[start(x)>=xlim[1] & end(x)<=xlim[2],]
     if (is.null(names(x))) {
       if (!is.null(x$names)) names(x) <- x$names else warning("Could not find read pair names in pbam")
-    }    
+    }
     if(sum(duplicated(names(x)))==0) names(x) <- sub("\\..*", "", names(x))
     if (length(x)==0) {
       warning('There are no reads in the specified region')
     } else {
       layout(c(2,1),heights=heights)
       par(oma=c(1,0,0,0),mar=c(2.1,.1,.1,.1))
-      genePlot(gene=gene, xlab='', ylab='', xlim=xlim, ...)
+      genePlot(gene, xlab='', ylab='', xlim=xlim, ...)
       tab <- table(names(x))
       sel <- names(x) %in% c(names(tab[tab>2]), findLongInserts(x, minsize=maxFragLength))
       notsel <- !sel
@@ -279,7 +279,7 @@ findLongInserts <- function(x, minsize) {
   # - x: GRanges, column id must indicate read pair id. Assumed to be ordered according to read id & fragment start
   # - minsize: minimum length for an insert to be considered long. Defaults to 99% percentile of observed insert widths
   # Returns: ids of long inserts
-  
+
   w <- end(x)[-1] - start(x)[-length(x)]
   sel <- names(x)[-length(x)] == names(x)[-1]
   w[!sel] <- 0

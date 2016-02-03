@@ -12,10 +12,9 @@
   process.
   The function is a wrapper combining functions simReads and calcExp.
 }
-\usage{simMAE(nsim, islandid, nreads, readLength, fragLength,
-burnin=1000, pc, distr, readLength.pilot=readLength,
-eset.pilot, usePilot=FALSE, retTxsError=FALSE, genomeDB,
-mc.cores=1, mc.cores.int=1, verbose=FALSE)}
+\usage{
+simMAE(nsim, islandid, nreads, readLength, fragLength, burnin=1000, pc, distr, readLength.pilot=readLength, eset.pilot, usePilot=FALSE, retTxsError=FALSE, genomeDB, mc.cores=1, mc.cores.int=1, verbose=FALSE, writeBam=FALSE, bamFile=NULL)
+}
 \arguments{
   \item{nsim}{Number of RNA-seq datasets to generate (often as little as
     \code{nsim=10} suffice)}
@@ -50,6 +49,8 @@ Else the output is a \code{data.frame} with overall MAE across all isoforms}
 \item{mc.cores}{Number of cores to use in the expression estimation step, passed on to \code{calcExp}}
 \item{mc.cores.int}{Number of cores to simulate RNA-seq datasets in parallel}
 \item{verbose}{Set \code{verbose=TRUE} to print progress information}
+\item{writeBam}{Set to \code{TRUE} to write simulated reads to a .bam file}
+\item{bamFile}{Name of the .bam file}
 }
 \details{
   \code{simMAE} simulates \code{nsim} datasets under each experimental
@@ -71,7 +72,7 @@ Else the output is a \code{data.frame} with overall MAE across all isoforms}
   4. The mean absolute estimation error \code{sum(abs(pihat-pi))} across
   all isoforms is computed
 
-  
+
 Ideally \code{simMAE} should use pilot data from a relevant related experiment
 to simulate what future data may look like for the current experiment of
 interest.
@@ -99,13 +100,13 @@ We emphasize that relative isoform expressions are not trained from the
 pilot data, and that while the distribution of gene expression levels
 resembles that in \code{eset.pilot}, no attempt is made to match gene
 identifiers and hence the results for individual genes should not be
-trusted 
+trusted
 (hence this option is only available when \code{retTxsError==FALSE}.
 }
 \value{
 If \code{retTxsError==TRUE}, \code{simMAE} returns posterior expected MAE
   for each individual isoform.
-Else the output is a \code{data.frame} with overall MAE across all isoforms  
+Else the output is a \code{data.frame} with overall MAE across all isoforms
 }
 \seealso{wrapKnown,simReads,calcExp}
 \references{
