@@ -1,5 +1,5 @@
 Package: casper
-Version: 2.16.0
+Version: 2.16.1
 Date: 2016-02-16
 Title: Characterization of Alternative Splicing based on Paired-End
         Reads
@@ -22,5 +22,5 @@ Collate: GenericDefs.R ClassDefinitions.R asymmetryCheck.R calcDenovo.R calcExp.
         pathCounts.R probNonEquiv.R procBam.R procGenome.R qqnormGenomeWide.R
         relexprByGene.R rmShortInserts.R simMultSamples.R simPost.R simReads.R
         splitGenomeByLength.R truncnorm.R wrapKnown.R checks.R wrapDenovo.R
-biocViews: GeneExpression, DifferentialExpression, Transcription,
+biocViews: ImmunoOncology, GeneExpression, DifferentialExpression, Transcription,
         RNASeq, Sequencing
