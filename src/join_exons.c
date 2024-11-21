@@ -18,9 +18,9 @@ SEXP joinExons(SEXP sexons, SEXP sreads, SEXP stot){
   int hashSize, i, *exons, *reads, len, l, **links, tot;
   hash_t *myhashP, myhash;
 
-  PROTECT(sexons = coerceVector(sexons, INTSXP));
-  PROTECT(sreads = coerceVector(sreads, INTSXP));
-  PROTECT(stot = coerceVector(stot, INTSXP));
+  PROTECT(sexons = Rf_coerceVector(sexons, INTSXP));
+  PROTECT(sreads = Rf_coerceVector(sreads, INTSXP));
+  PROTECT(stot = Rf_coerceVector(stot, INTSXP));
   len=length(sexons);
 
   exons = INTEGER(sexons);
@@ -112,9 +112,9 @@ SEXP joinExons(SEXP sexons, SEXP sreads, SEXP stot){
   SEXP res;
   SEXP keys;
   SEXP counts;
-  PROTECT(keys = allocVector(STRSXP, j));
-  PROTECT(counts = allocVector(INTSXP, j));
-  PROTECT(res = allocVector(VECSXP, 2));
+  PROTECT(keys = Rf_allocVector(STRSXP, j));
+  PROTECT(counts = Rf_allocVector(INTSXP, j));
+  PROTECT(res = Rf_allocVector(VECSXP, 2));
   pcounts = INTEGER(counts);
 
   for(i=0; i<j; i++) {

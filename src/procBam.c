@@ -95,8 +95,8 @@ SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP mpos, SEXP cigar, SEXP stran
 		if(cigs[1]<0) ini=2;
 		for(j=ini; j<cigs[0]+1;j++) {
 		  if(cigs[j]>0){
-		    SET_STRING_ELT(key, counter, mkChar(bucket->key));
-		    if(length(chr)>1) SET_STRING_ELT(chrom, counter, mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_1))));
+		    SET_STRING_ELT(key, counter, Rf_mkChar(bucket->key));
+		    if(length(chr)>1) SET_STRING_ELT(chrom, counter, Rf_mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_1))));
 		    if(length(rflag)>1) p_rflag[counter] = p_flag[frags[tmp].strand_1];
 		    p_strs[counter] = frags[tmp].len_1;
 		    p_len[counter] = frags[tmp].len_1+(cigs[j]-1);
@@ -107,7 +107,7 @@ SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP mpos, SEXP cigar, SEXP stran
 		  } else {
 		    if((cigs[0]>1)&&(j<cigs[0])) {
 		      if(INTEGER(totJunx)[0]>1){
-			if(length(chr)>1) SET_STRING_ELT(jchrom, jcounter, mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_1))));
+			if(length(chr)>1) SET_STRING_ELT(jchrom, jcounter, Rf_mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_1))));
 			p_jstrs[jcounter] = frags[tmp].len_1;
 			p_jlen[jcounter] = frags[tmp].len_1-1;
 			jcounter++;
@@ -125,8 +125,8 @@ SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP mpos, SEXP cigar, SEXP stran
 		  } else frags[tmp].len_2=p_start[frags[tmp].strand_2];
 		  for(j=ini; j<cigs[0]+1;j++) {        
 		    if(cigs[j]>0){
-		      SET_STRING_ELT(key, counter, mkChar(bucket->key));
-		      if(length(chr)>1) SET_STRING_ELT(chrom, counter, mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_2))));
+		      SET_STRING_ELT(key, counter, Rf_mkChar(bucket->key));
+		      if(length(chr)>1) SET_STRING_ELT(chrom, counter, Rf_mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_2))));
 		      if(length(rflag)>1) p_rflag[counter] = p_flag[frags[tmp].strand_2];
 		      p_strs[counter] = frags[tmp].len_2;
 		      p_len[counter] = frags[tmp].len_2+(cigs[j]-1);
@@ -137,7 +137,7 @@ SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP mpos, SEXP cigar, SEXP stran
 		    } else {
 		      if((cigs[0]>1)&&(j<cigs[0])) {
 			if(INTEGER(totJunx)[0]>1){
-			  if(length(chr)>1) SET_STRING_ELT(jchrom, jcounter, mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_2))));
+			  if(length(chr)>1) SET_STRING_ELT(jchrom, jcounter, Rf_mkChar(CHAR(STRING_ELT(chr, frags[tmp].strand_2))));
 			  p_jstrs[jcounter] = frags[tmp].len_2;
 			  p_jlen[jcounter] = frags[tmp].len_2-1;
 			  jcounter++;
@@ -156,7 +156,7 @@ SEXP procBam(SEXP qname, SEXP chr, SEXP start, SEXP mpos, SEXP cigar, SEXP stran
 	}
 
 	SEXP reads;
-	PROTECT(reads = allocVector(VECSXP, 10));
+	PROTECT(reads = Rf_allocVector(VECSXP, 10));
 	SET_VECTOR_ELT(reads, 0, len);
 	SET_VECTOR_ELT(reads, 1, strs);
 	SET_VECTOR_ELT(reads, 2, key);

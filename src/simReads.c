@@ -19,25 +19,25 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   FILE *LRFILE=NULL;
   SEXP startsTmp;
 
-  PROTECT(gene_exp);// = coerceVector(gene_exp, INTSXP));
-  PROTECT(var_exp);// = coerceVector(var_exp, REALSXP));
-  PROTECT(var_num);// = coerceVector(var_num, INTSXP));
-  PROTECT(var_len);// = coerceVector(var_len, INTSXP));
-  PROTECT(exon_num);// = coerceVector(exon_num, INTSXP));
-  PROTECT(exon_st);// = coerceVector(exon_st, INTSXP));
-  PROTECT(exon_end);// = coerceVector(exon_end, INTSXP));
-  PROTECT(exon_id);// = coerceVector(exon_id, INTSXP));
-  PROTECT(tx_strand);// = coerceVector(tx_strand, INTSXP));
-  PROTECT(len_distrV);// = coerceVector(len_distrV, INTSXP));
-  PROTECT(len_distrD);// = coerceVector(len_distrD, REALSXP));
-  PROTECT(st_distrV);// = coerceVector(st_distrV, REALSXP));
-  PROTECT(st_distrD);// = coerceVector(st_distrD, REALSXP));
-  PROTECT(read_len);// = coerceVector(read_len, INTSXP));
-  PROTECT(nn);// = coerceVector(nn, INTSXP));
+  PROTECT(gene_exp);// = Rf_coerceVector(gene_exp, INTSXP));
+  PROTECT(var_exp);// = Rf_coerceVector(var_exp, REALSXP));
+  PROTECT(var_num);// = Rf_coerceVector(var_num, INTSXP));
+  PROTECT(var_len);// = Rf_coerceVector(var_len, INTSXP));
+  PROTECT(exon_num);// = Rf_coerceVector(exon_num, INTSXP));
+  PROTECT(exon_st);// = Rf_coerceVector(exon_st, INTSXP));
+  PROTECT(exon_end);// = Rf_coerceVector(exon_end, INTSXP));
+  PROTECT(exon_id);// = Rf_coerceVector(exon_id, INTSXP));
+  PROTECT(tx_strand);// = Rf_coerceVector(tx_strand, INTSXP));
+  PROTECT(len_distrV);// = Rf_coerceVector(len_distrV, INTSXP));
+  PROTECT(len_distrD);// = Rf_coerceVector(len_distrD, REALSXP));
+  PROTECT(st_distrV);// = Rf_coerceVector(st_distrV, REALSXP));
+  PROTECT(st_distrD);// = Rf_coerceVector(st_distrD, REALSXP));
+  PROTECT(read_len);// = Rf_coerceVector(read_len, INTSXP));
+  PROTECT(nn);// = Rf_coerceVector(nn, INTSXP));
   PROTECT(lr_fileR);// = AS_CHARACTER(lr_fileR));
-  PROTECT(chr);// = coerceVector(chr, STRSXP));
-  PROTECT(rbam);// = coerceVector(rbam, INTSXP));
-  PROTECT(rinsideBam);// = coerceVector(rinsideBam, INTSXP));
+  PROTECT(chr);// = Rf_coerceVector(chr, STRSXP));
+  PROTECT(rbam);// = Rf_coerceVector(rbam, INTSXP));
+  PROTECT(rinsideBam);// = Rf_coerceVector(rinsideBam, INTSXP));
   PROTECT(verbose);
 
 
@@ -72,24 +72,24 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
 
 
   SEXP gans, vans, lans, sans, ans, strs, qname, rname, strand, posr, cigar;
-  PROTECT(gans = allocVector(INTSXP, n));
-  PROTECT(vans = allocVector(INTSXP, n));
-  PROTECT(lans = allocVector(INTSXP, n));
-  PROTECT(sans = allocVector(REALSXP, n));
-  PROTECT(strs = allocVector(INTSXP, n));
-  PROTECT(ans = allocVector(VECSXP, 12));
+  PROTECT(gans = Rf_allocVector(INTSXP, n));
+  PROTECT(vans = Rf_allocVector(INTSXP, n));
+  PROTECT(lans = Rf_allocVector(INTSXP, n));
+  PROTECT(sans = Rf_allocVector(REALSXP, n));
+  PROTECT(strs = Rf_allocVector(INTSXP, n));
+  PROTECT(ans = Rf_allocVector(VECSXP, 12));
   if(insideBam==1){
-    PROTECT(qname = allocVector(STRSXP, n*2)); 
-    PROTECT(rname = allocVector(STRSXP, n*2));
-    PROTECT(strand = allocVector(STRSXP, n*2));
-    PROTECT(posr = allocVector(INTSXP, n*2));
-    PROTECT(cigar = allocVector(STRSXP, n*2));
+    PROTECT(qname = Rf_allocVector(STRSXP, n*2)); 
+    PROTECT(rname = Rf_allocVector(STRSXP, n*2));
+    PROTECT(strand = Rf_allocVector(STRSXP, n*2));
+    PROTECT(posr = Rf_allocVector(INTSXP, n*2));
+    PROTECT(cigar = Rf_allocVector(STRSXP, n*2));
   } else {
-    PROTECT(qname = allocVector(STRSXP, 1));
-    PROTECT(rname = allocVector(STRSXP, 1));
-    PROTECT(strand = allocVector(STRSXP, 1));
-    PROTECT(posr = allocVector(INTSXP, 1));
-    PROTECT(cigar = allocVector(STRSXP, 1));
+    PROTECT(qname = Rf_allocVector(STRSXP, 1));
+    PROTECT(rname = Rf_allocVector(STRSXP, 1));
+    PROTECT(strand = Rf_allocVector(STRSXP, 1));
+    PROTECT(posr = Rf_allocVector(INTSXP, 1));
+    PROTECT(cigar = Rf_allocVector(STRSXP, 1));
   }
   gansS = INTEGER(gans);
   vansS = INTEGER(vans);
@@ -105,7 +105,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   char **cigars = NULL;
   char seqstr[rl+1], seqnuc[2]="=", tmpchar[100];
   hash_t *paths, paths_pted;
-  PROTECT(startsTmp=allocVector(INTSXP, 3));
+  PROTECT(startsTmp=Rf_allocVector(INTSXP, 3));
   starts = INTEGER(startsTmp);
   
   if(bam==1){
@@ -173,12 +173,12 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
         else vansS[i] = starts[1];
 	
 	if(insideBam==1){
-	  sprintf(tmpchar, "%d.%d", i, var+1); SET_STRING_ELT(qname, i*2, mkChar(tmpchar)); SET_STRING_ELT(qname, i*2+1, mkChar(tmpchar));
-	  SET_STRING_ELT(rname, i*2, mkChar(genes[gene].chr)); SET_STRING_ELT(rname, i*2+1, mkChar(genes[gene].chr));
-	  if(genes[gene].vars[var].strand==0) { SET_STRING_ELT(strand, i*2, mkChar("-")); SET_STRING_ELT(strand, i*2+1, mkChar("-")); }
-	  else { SET_STRING_ELT(strand, i*2, mkChar("+")); SET_STRING_ELT(strand, i*2+1, mkChar("+")); }
+	  sprintf(tmpchar, "%d.%d", i, var+1); SET_STRING_ELT(qname, i*2, Rf_mkChar(tmpchar)); SET_STRING_ELT(qname, i*2+1, Rf_mkChar(tmpchar));
+	  SET_STRING_ELT(rname, i*2, Rf_mkChar(genes[gene].chr)); SET_STRING_ELT(rname, i*2+1, Rf_mkChar(genes[gene].chr));
+	  if(genes[gene].vars[var].strand==0) { SET_STRING_ELT(strand, i*2, Rf_mkChar("-")); SET_STRING_ELT(strand, i*2+1, Rf_mkChar("-")); }
+	  else { SET_STRING_ELT(strand, i*2, Rf_mkChar("+")); SET_STRING_ELT(strand, i*2+1, Rf_mkChar("+")); }
 	  pos[i*2] = starts[3]; pos[i*2+1] = starts[4];
-	  SET_STRING_ELT(cigar, i*2, mkChar(cigars[0])); SET_STRING_ELT(cigar, i*2+1, mkChar(cigars[1]));
+	  SET_STRING_ELT(cigar, i*2, Rf_mkChar(cigars[0])); SET_STRING_ELT(cigar, i*2+1, Rf_mkChar(cigars[1]));
 	}
 	totp+=starts[2];
 	//free(starts);
@@ -203,8 +203,8 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
   hash_node_t *bucket;
   int count=0, *p_pathc;
   SEXP key, pathc;
-  PROTECT(key = allocVector(STRSXP, totp));  
-  PROTECT(pathc = allocVector(INTSXP, totp));
+  PROTECT(key = Rf_allocVector(STRSXP, totp));  
+  PROTECT(pathc = Rf_allocVector(INTSXP, totp));
   p_pathc = INTEGER(pathc);
 
   
@@ -212,7 +212,7 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
     if(paths_pted.bucket[i]!=NULL) {
       bucket=paths_pted.bucket[i];
       while(bucket) {
-	SET_STRING_ELT(key, count, mkChar(bucket->key));
+	SET_STRING_ELT(key, count, Rf_mkChar(bucket->key));
 	p_pathc[count] = bucket->data;
 	bucket=bucket->next;
 	count++;

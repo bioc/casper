@@ -25,10 +25,10 @@ SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
     fragsHashPtr=&fragsHash;
     hashSize=pow(2,25);	
 	
-    PROTECT(rid);// = coerceVector(rid, INTSXP));
-    PROTECT(exst);// = coerceVector(exst, INTSXP));
-    PROTECT(exid);// = coerceVector(exid, INTSXP));
-    PROTECT(reid);// = coerceVector(reid, STRSXP));
+    PROTECT(rid);// = Rf_coerceVector(rid, INTSXP));
+    PROTECT(exst);// = Rf_coerceVector(exst, INTSXP));
+    PROTECT(exid);// = Rf_coerceVector(exid, INTSXP));
+    PROTECT(reid);// = Rf_coerceVector(reid, STRSXP));
     nreads=length(rid);
     
     hash_init(fragsHashPtr, hashSize);
@@ -57,9 +57,9 @@ SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
     hash_destroy(fragsHashPtr);
     
     SEXP key, pathc, tot;
-    PROTECT(key = allocVector(STRSXP, nreads));
-    PROTECT(pathc = allocVector(INTSXP, nreads));
-    PROTECT(tot = allocVector(INTSXP, 1));
+    PROTECT(key = Rf_allocVector(STRSXP, nreads));
+    PROTECT(pathc = Rf_allocVector(INTSXP, nreads));
+    PROTECT(tot = Rf_allocVector(INTSXP, 1));
     
     int *p_pathc, count, *p_tot;
     count=0;
@@ -71,7 +71,7 @@ SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
         if(pathsHash.bucket[i]!=NULL)  {
             bucket=pathsHash.bucket[i];
             while(bucket) {
-                SET_STRING_ELT(key, count, mkChar(bucket->key));
+                SET_STRING_ELT(key, count, Rf_mkChar(bucket->key));
                 p_pathc[count] = bucket->data;
                 bucket=bucket->next;
                 count++;
@@ -82,7 +82,7 @@ SEXP pathCounts(SEXP reid, SEXP rid, SEXP exst, SEXP exid){
     p_tot[0] = count;
     
     SEXP ans;
-    PROTECT(ans = allocVector(VECSXP, 3));
+    PROTECT(ans = Rf_allocVector(VECSXP, 3));
     SET_VECTOR_ELT(ans, 0, key);
     SET_VECTOR_ELT(ans, 1, pathc);
     SET_VECTOR_ELT(ans, 2, tot);

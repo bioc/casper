@@ -239,7 +239,7 @@ DataFrame* importDataFrame(SEXP exonsR, SEXP exonwidthR, SEXP pathCountsR, SEXP 
 
   int np = LENGTH(pathCountsR);
 
-  SEXP pnames = getAttrib(pathCountsR, R_NamesSymbol);
+  SEXP pnames = Rf_getAttrib(pathCountsR, R_NamesSymbol);
 
   int* pathCounts = INTEGER(pathCountsR);
 
@@ -271,7 +271,7 @@ void importTranscripts(set<Variant*, VariantCmp> *initvars, DataFrame* df, SEXP 
 
 	int nt = LENGTH(transcriptsR);
 
-	SEXP tnames = getAttrib(transcriptsR, R_NamesSymbol);
+	SEXP tnames = Rf_getAttrib(transcriptsR, R_NamesSymbol);
 
 	Variant *v;
 
@@ -402,17 +402,17 @@ extern "C"
 
     SEXP ans;
 
-    PROTECT(ans= allocVector(VECSXP, 7));
+    PROTECT(ans= Rf_allocVector(VECSXP, 7));
 
 
 
     //RETURN LOG-LIKELIHOOD + LOG-PRIOR
 
-    SET_VECTOR_ELT(ans, 0, allocVector(REALSXP,ncol));
+    SET_VECTOR_ELT(ans, 0, Rf_allocVector(REALSXP,ncol));
 
     double *logpos= REAL(VECTOR_ELT(ans,0));
 
-    gridR = coerceVector(gridR, REALSXP); //coerce matrix to vector
+    gridR = Rf_coerceVector(gridR, REALSXP); //coerce matrix to vector
 
     double *pivals= REAL(gridR);
 
@@ -422,11 +422,11 @@ extern "C"
 
     //RETURN POSTERIOR MODE & HESSIAN
 
-    SET_VECTOR_ELT(ans, 1, allocVector(REALSXP,vc));  //stores estimated expression
+    SET_VECTOR_ELT(ans, 1, Rf_allocVector(REALSXP,vc));  //stores estimated expression
 
-    SET_VECTOR_ELT(ans, 2, allocVector(STRSXP,vc)); //stores variant names
+    SET_VECTOR_ELT(ans, 2, Rf_allocVector(STRSXP,vc)); //stores variant names
 
-    SET_VECTOR_ELT(ans, 3, allocVector(REALSXP,1)); //stores logpos at the mode
+    SET_VECTOR_ELT(ans, 3, Rf_allocVector(REALSXP,1)); //stores logpos at the mode
 
                 
 
@@ -452,7 +452,7 @@ extern "C"
 
       const char *cname= (v->name).c_str();
 
-      SET_STRING_ELT(varnamesR,j,mkChar(cname));  //variant name
+      SET_STRING_ELT(varnamesR,j,Rf_mkChar(cname));  //variant name
 
     }
 
@@ -460,7 +460,7 @@ extern "C"
 
 
 
-    SET_VECTOR_ELT(ans, 4, allocMatrix(REALSXP,vc-1,vc-1)); //stores variance of estimated expression (logit scale)
+    SET_VECTOR_ELT(ans, 4, Rf_allocMatrix(REALSXP,vc-1,vc-1)); //stores variance of estimated expression (logit scale)
 
     double *Svec= REAL(VECTOR_ELT(ans,4));
 
@@ -488,7 +488,7 @@ extern "C"
 
     int np = (casp->frame->data).size();
 
-    SET_VECTOR_ELT(ans, 5, allocMatrix(REALSXP,vc,np));  //stores estimated expression
+    SET_VECTOR_ELT(ans, 5, Rf_allocMatrix(REALSXP,vc,np));  //stores estimated expression
 
     double *probmatrix = REAL(VECTOR_ELT(ans, 5));
 
@@ -516,9 +516,9 @@ extern "C"
 
     SEXP dimnames, rownames;
 
-    PROTECT(dimnames = allocVector(VECSXP, 2));
+    PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 
-    PROTECT(rownames = allocVector(STRSXP, np));
+    PROTECT(rownames = Rf_allocVector(STRSXP, np));
 
     int j=0;
 
@@ -550,7 +550,7 @@ extern "C"
 
       const char *cname= str1.c_str();
 
-      SET_STRING_ELT(rownames,j,mkChar(cname));  //path name
+      SET_STRING_ELT(rownames,j,Rf_mkChar(cname));  //path name
 
 
 
@@ -560,13 +560,13 @@ extern "C"
 
     SET_VECTOR_ELT(dimnames, 1, rownames);
 
-    setAttrib(VECTOR_ELT(ans,5), R_DimNamesSymbol, dimnames);
+    Rf_setAttrib(VECTOR_ELT(ans,5), R_DimNamesSymbol, dimnames);
 
 
 
     //RETURN INTEGRATED LIKELIHOOD
 
-    SET_VECTOR_ELT(ans, 6, allocVector(REALSXP,2));
+    SET_VECTOR_ELT(ans, 6, Rf_allocVector(REALSXP,2));
 
     casp->is_runs= 10000; //Casper::is_runs= 10000;
 
@@ -600,7 +600,7 @@ extern "C"
 
 
 
-		PROTECT(ansMultiple= allocVector(VECSXP, ngenes));
+		PROTECT(ansMultiple= Rf_allocVector(VECSXP, ngenes));
 
 
 
@@ -696,11 +696,11 @@ extern "C"
 
          	SEXP ans;
 
-                PROTECT(ans= allocVector(VECSXP, 5));
+                PROTECT(ans= Rf_allocVector(VECSXP, 5));
 
-  		SET_VECTOR_ELT(ans, 0, allocVector(REALSXP,vc));  //stores estimated expression
+  		SET_VECTOR_ELT(ans, 0, Rf_allocVector(REALSXP,vc));  //stores estimated expression
 
-                SET_VECTOR_ELT(ans, 1, allocVector(STRSXP,vc)); //stores variant names	   
+                SET_VECTOR_ELT(ans, 1, Rf_allocVector(STRSXP,vc)); //stores variant names	   
 
 		double *expr= REAL(VECTOR_ELT(ans,0));
 
@@ -722,7 +722,7 @@ extern "C"
 
 		  const char *cname= (v->name).c_str();
 
-		  SET_STRING_ELT(varnamesR,j,mkChar(cname));  //variant name
+		  SET_STRING_ELT(varnamesR,j,Rf_mkChar(cname));  //variant name
 
                 }
 
@@ -730,7 +730,7 @@ extern "C"
 
 		if (INTEGER(citypeR)[0]>0) {
 
-		  SET_VECTOR_ELT(ans, 2, allocVector(REALSXP,vc)); //stores variance of estimated expression (logit scale)
+		  SET_VECTOR_ELT(ans, 2, Rf_allocVector(REALSXP,vc)); //stores variance of estimated expression (logit scale)
 
 		  double *vexpr= REAL(VECTOR_ELT(ans,2));
 
@@ -754,7 +754,7 @@ extern "C"
 
 		      int niter= INTEGER(niterR)[0], burnin= INTEGER(burninR)[0];
 
-		      SET_VECTOR_ELT(ans, 3, allocVector(REALSXP,vc*(niter-burnin))); //stores posterior samples
+		      SET_VECTOR_ELT(ans, 3, Rf_allocVector(REALSXP,vc*(niter-burnin))); //stores posterior samples
 
 		      double *pi = REAL(VECTOR_ELT(ans,3));
 
@@ -768,7 +768,7 @@ extern "C"
 
 		    } else {
 
-		      SET_VECTOR_ELT(ans, 3, allocVector(REALSXP,vc));
+		      SET_VECTOR_ELT(ans, 3, Rf_allocVector(REALSXP,vc));
 
 		      double *pi = REAL(VECTOR_ELT(ans,3));
 
@@ -781,7 +781,7 @@ extern "C"
 		}
 
 
-		SET_VECTOR_ELT(ans, 4, allocVector(INTSXP, 1));
+		SET_VECTOR_ELT(ans, 4, Rf_allocVector(INTSXP, 1));
 		
 		int *totCp = INTEGER(VECTOR_ELT(ans, 4));
 
@@ -819,7 +819,7 @@ extern "C"
 
 
 
-		PROTECT(ansMultiple= allocVector(VECSXP, ngenes));
+		PROTECT(ansMultiple= Rf_allocVector(VECSXP, ngenes));
 
 
 
@@ -1023,7 +1023,7 @@ extern "C"
 
 	  SEXP ans;
 
-	  PROTECT(ans= allocVector(VECSXP, 6));
+	  PROTECT(ans= Rf_allocVector(VECSXP, 6));
 
 
 	  //Report posterior probabilities
@@ -1034,7 +1034,7 @@ extern "C"
 
 	  if (selBest==0) { nx= resProbs.size(); } else { nx=1; }
 	   
-	  SET_VECTOR_ELT(ans, 0, allocMatrix(REALSXP,nx,3));
+	  SET_VECTOR_ELT(ans, 0, Rf_allocMatrix(REALSXP,nx,3));
 	   
 	  double *resProbsR= REAL(VECTOR_ELT(ans,0));
 	   
@@ -1075,8 +1075,8 @@ extern "C"
 
 	  //Report estimated expression
 
-	  SET_VECTOR_ELT(ans, 1, allocMatrix(REALSXP,nrowpi,2)); //stores model id and estimated expression
-	  SET_VECTOR_ELT(ans, 2, allocVector(STRSXP,nrowpi));  //stores variant names  	   
+	  SET_VECTOR_ELT(ans, 1, Rf_allocMatrix(REALSXP,nrowpi,2)); //stores model id and estimated expression
+	  SET_VECTOR_ELT(ans, 2, Rf_allocVector(STRSXP,nrowpi));  //stores variant names  	   
 	  double *expr= REAL(VECTOR_ELT(ans,1));
 	  SEXP exprvnamesR= VECTOR_ELT(ans,2);
   
@@ -1113,7 +1113,7 @@ extern "C"
 		}
 
 		sname= (varshortnames[v]).c_str();
-		SET_STRING_ELT(exprvnamesR,rowid,mkChar(sname));
+		SET_STRING_ELT(exprvnamesR,rowid,Rf_mkChar(sname));
 
 		if (allvariants.count(v)==0) {
 
@@ -1155,7 +1155,7 @@ extern "C"
 	      }
 
 	      sname= (varshortnames[v]).c_str();
-	      SET_STRING_ELT(exprvnamesR,rowid,mkChar(sname));
+	      SET_STRING_ELT(exprvnamesR,rowid,Rf_mkChar(sname));
 
 	      if (allvariants.count(v)==0) {
 
@@ -1173,7 +1173,7 @@ extern "C"
 
 
 	  //Report short & long variant names
-	  SET_VECTOR_ELT(ans, 3, allocMatrix(STRSXP,varshortnames.size(),2));  //stores variant names
+	  SET_VECTOR_ELT(ans, 3, Rf_allocMatrix(STRSXP,varshortnames.size(),2));  //stores variant names
 	  SEXP varnamesR= VECTOR_ELT(ans,3);
 
 	  int idxvarmap=0;
@@ -1183,8 +1183,8 @@ extern "C"
             sname= (itvarmap->second).c_str();
             cname= (itvarmap->first->exoncomb).c_str();
            
-            SET_STRING_ELT(varnamesR,idxvarmap,mkChar(sname));  //short variant name
-            SET_STRING_ELT(varnamesR,idxvarmap+varshortnames.size(),mkChar(cname));  //long variant name (exons in the variant)
+            SET_STRING_ELT(varnamesR,idxvarmap,Rf_mkChar(sname));  //short variant name
+            SET_STRING_ELT(varnamesR,idxvarmap+varshortnames.size(),Rf_mkChar(cname));  //long variant name (exons in the variant)
 
 	    idxvarmap++;
            
@@ -1193,7 +1193,7 @@ extern "C"
 
 	  //Report sum (integrated likelihood * prior)/exp(integralMax) across all models
 
-          SET_VECTOR_ELT(ans,4, allocVector(REALSXP,2));
+          SET_VECTOR_ELT(ans,4, Rf_allocVector(REALSXP,2));
 
           REAL(VECTOR_ELT(ans,4))[0]= seppl->integralSum;
 
@@ -1202,7 +1202,7 @@ extern "C"
 
 	  //Report number of discarded path counts
 
-	  SET_VECTOR_ELT(ans,5, allocVector(INTSXP,1));
+	  SET_VECTOR_ELT(ans,5, Rf_allocVector(INTSXP,1));
 
 	  INTEGER(VECTOR_ELT(ans,5))[0]= discarded;
 

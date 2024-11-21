@@ -24,7 +24,7 @@ SEXP uniqQname(SEXP qname, SEXP totReadsR, SEXP pos, SEXP mpos, SEXP names){
   int *p_mpos=INTEGER(mpos);   
 
 //vector to return new read ids
-  PROTECT(names = coerceVector(names, STRSXP));
+  PROTECT(names = Rf_coerceVector(names, STRSXP));
 
   char **tmpres;
   tmpres = malloc(floor(totReads/2) * sizeof(char*));
@@ -44,7 +44,7 @@ SEXP uniqQname(SEXP qname, SEXP totReadsR, SEXP pos, SEXP mpos, SEXP names){
     if(p_pos[i]<p_mpos[i]) sprintf(idtmp, "%d",  p_mpos[i]);
     else sprintf(idtmp, "%d",  p_pos[i]);
     strcat(tmp, idtmp);
-    SET_STRING_ELT(names, i, mkChar(tmp));
+    SET_STRING_ELT(names, i, Rf_mkChar(tmp));
     l=hash_lookup(hashP, tmp);
     if(l!=HASH_FAIL) {
       hash_update(hashP, tmp, l+1);
@@ -59,13 +59,13 @@ SEXP uniqQname(SEXP qname, SEXP totReadsR, SEXP pos, SEXP mpos, SEXP names){
   hash_destroy(hashP);
 
   SEXP res;
-  PROTECT(res = allocVector(STRSXP, count));
+  PROTECT(res = Rf_allocVector(STRSXP, count));
   for (i=0; i<count; i++) {
-    SET_STRING_ELT(res, i, mkChar(tmpres[i]));
+    SET_STRING_ELT(res, i, Rf_mkChar(tmpres[i]));
   }
 
   SEXP ans;
-  PROTECT(ans = allocVector(VECSXP, 2));
+  PROTECT(ans = Rf_allocVector(VECSXP, 2));
   SET_VECTOR_ELT(ans, 0, names);
   SET_VECTOR_ELT(ans, 1, res);
   

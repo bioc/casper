@@ -90,7 +90,7 @@ int are_connected(int i, int j, int **p_exons, int **ex2tx, int **tx2ex, hash_t 
   return(0);
 }
 
-#define getDims(A) INTEGER( coerceVector( getAttrib(A, R_DimSymbol ) , INTSXP) )
+#define getDims(A) INTEGER( Rf_coerceVector( getAttrib(A, R_DimSymbol ) , INTSXP) )
 
 SEXP makeGeneIslands(SEXP exons, SEXP isl, SEXP exisl, SEXP txs, SEXP totEx, SEXP nexR, SEXP tabR, SEXP tabtxR){
   //ex2tx is a list of exons with the transcripts they belong to
@@ -100,13 +100,13 @@ SEXP makeGeneIslands(SEXP exons, SEXP isl, SEXP exisl, SEXP txs, SEXP totEx, SEX
 
   p_exons = malloc(3 * sizeof(int *));
   p_islands = malloc(3 * sizeof(int *));
-  PROTECT (exons = coerceVector(exons, INTSXP));
-  PROTECT (tabR = coerceVector(tabR, INTSXP));
-  PROTECT (tabtxR = coerceVector(tabtxR, INTSXP));
-  PROTECT (isl = coerceVector(isl, INTSXP)); 
-  PROTECT (exisl = coerceVector(exisl, INTSXP));
-  PROTECT (txs = coerceVector(txs, INTSXP));
-  PROTECT (totEx = coerceVector(totEx, INTSXP));
+  PROTECT (exons = Rf_coerceVector(exons, INTSXP));
+  PROTECT (tabR = Rf_coerceVector(tabR, INTSXP));
+  PROTECT (tabtxR = Rf_coerceVector(tabtxR, INTSXP));
+  PROTECT (isl = Rf_coerceVector(isl, INTSXP)); 
+  PROTECT (exisl = Rf_coerceVector(exisl, INTSXP));
+  PROTECT (txs = Rf_coerceVector(txs, INTSXP));
+  PROTECT (totEx = Rf_coerceVector(totEx, INTSXP));
   p_exons[0] = INTEGER(exons);
   //p_exons[2] = INTEGER(islands);
   p_exons[1] = INTEGER(txs);
