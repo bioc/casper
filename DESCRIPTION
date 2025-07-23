@@ -1,13 +1,13 @@
 Package: casper
-Version: 2.43.0
-Date: 2024-03-18
+Version: 2.43.1
+Date: 2025-07-22
 Title: Characterization of Alternative Splicing based on Paired-End
         Reads
 Author: David Rossell, Camille Stephan-Otto, Manuel Kroiss, Miranda
         Stobbe, Victor Pena
 Maintainer: David Rossell <rosselldavid@gmail.com>
 Depends: R (>= 3.6.0), Biobase, IRanges, methods, GenomicRanges
-Imports: BiocGenerics (>= 0.31.6), coda, EBarrays, gaga, gtools, GenomeInfoDb, GenomicFeatures, limma, mgcv, Rsamtools, rtracklayer, S4Vectors (>= 0.9.25), sqldf, survival, VGAM
+Imports: BiocGenerics (>= 0.31.6), coda, EBarrays, gaga, gtools, Seqinfo, GenomicFeatures, limma, mgcv, Rsamtools, rtracklayer, S4Vectors (>= 0.9.25), sqldf, survival, VGAM
 Enhances: parallel
 Description: Infer alternative splicing from paired-end RNA-seq data.
         The model is based on counting paths across exons, rather than
