@@ -85,9 +85,9 @@ calcDenovo <- function(distrs, targetGenomeDB, knownGenomeDB=targetGenomeDB, pc,
       integrateMethod <- as.integer(1)
   } else { integrateMethod <- as.integer(2) }
   if (missing(readLength)) stop("readLength must be specified")
-  if (class(targetGenomeDB)!='annotatedGenome') stop("targetGenomeDB must be of class 'annotatedGenome'")
-  if (class(knownGenomeDB)!='annotatedGenome') stop("knownGenomeDB must be of class 'annotatedGenome'")
-  if (class(pc)!="pathCounts") stop("pc must be of class 'pathCounts'")
+  if (!inherits(targetGenomeDB, 'annotatedGenome')) stop("targetGenomeDB must be of class 'annotatedGenome'")
+  if (!inherits(knownGenomeDB, 'annotatedGenome')) stop("knownGenomeDB must be of class 'annotatedGenome'")
+  if (!inherits(pc, "pathCounts")) stop("pc must be of class 'pathCounts'")
   if (missing(mprior)) { mprior <- modelPrior(knownGenomeDB, verbose=verbose) }
   if (!all(c('nvarPrior','nexonPrior') %in% slotNames(mprior))) stop("Incorrect mprior. Please use modelPrior to generate it.")
   modelUnifPrior <- as.integer(0)

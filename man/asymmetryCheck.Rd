@@ -18,7 +18,7 @@ asymmetryCheck(x, ...)
 \arguments{
   \item{x}{\code{ExpressionSet}, \code{matrix} or \code{data.frame}
     with genes/isoforms in rows}
-  \item{...}{Other arguments to be passed on to code{plot}}
+  \item{...}{Other arguments to be passed on to \code{plot}}
 }
 \value{
   Boxplot with asymmetry coefficients for observed and simulated Normal data

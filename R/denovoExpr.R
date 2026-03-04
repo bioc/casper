@@ -26,7 +26,7 @@ variantMargExpr <- function(x,minProbExpr=0.5, minExpr=0.05) {
 }
 
 relativeExpr <- function(expr, summarize='modelAvg', minProbExpr=0.5, minExpr=0.05){
-  if (class(expr)!='denovoGenomeExpr') stop("expr must be of class 'denovoGenomeExpr'")
+  if (!inherits(expr, 'denovoGenomeExpr')) stop("expr must be of class 'denovoGenomeExpr'")
   if (!(summarize %in% c("bestModel", "modelAvg"))) stop("summarize must be one of 'bestModel' or 'modelAvg'")
   if (summarize=='bestModel'){
     ans <- lapply(as.list(expr), function(x){
@@ -65,7 +65,7 @@ relativeExpr <- function(expr, summarize='modelAvg', minProbExpr=0.5, minExpr=0.
 
 
 denovoExpr <- function(x, pc, rpkm=TRUE, summarize='modelAvg', minProbExpr=0.5, minExpr=0.05) {
-  if (class(x)!='denovoGenomeExpr') stop("expr must be of class 'denovoGenomeExpr'")
+  if (!inherits(x, 'denovoGenomeExpr')) stop("expr must be of class 'denovoGenomeExpr'")
   sel <- sapply(as.list(x), function(z) !is.na(posprob(z)[1,'posprob']))
   if (any(sel)) {
       pis <- relativeExpr(x[sel], summarize=summarize, minProbExpr=minProbExpr, minExpr=minExpr)

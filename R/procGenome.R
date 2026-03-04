@@ -379,8 +379,8 @@ setMethod("procGenome", signature(genDB="GRanges"), function(genDB, genome, mc.c
   
   tables$genes <- tables$genes[tables$genes$tx_name %in% tables$transcripts$tx_name,]
   if (verbose) cat("Making TranscriptDb object...\n")
-  txdb <- GenomicFeatures::makeTxDb(transcripts=tables[["transcripts"]], splicings=tables[["splicings"]], genes=tables[["genes"]], chrominfo=chrominfo, reassign.ids=TRUE, )
-  #txdb <- makeTranscriptDb(transcripts=tables[["transcripts"]], splicings=tables[["splicings"]], genes=tables[["genes"]], chrominfo=chrominfo, reassign.ids=TRUE, )
+  txdb <- makeTxDb(transcripts=tables[["transcripts"]], splicings=tables[["splicings"]], genes=tables[["genes"]], chrominfo=chrominfo, reassign.ids=TRUE, )
+  #txdb <- GenomicFeatures::makeTxDb(transcripts=tables[["transcripts"]], splicings=tables[["splicings"]], genes=tables[["genes"]], chrominfo=chrominfo, reassign.ids=TRUE, )
   txs <- GenomicFeatures::transcripts(txdb,columns=c("tx_id","tx_name","gene_id","exon_id"))
   Exons <- exonsBy(txdb, by="tx")
   #Remove transcripts with no exons

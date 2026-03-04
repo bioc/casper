@@ -77,10 +77,10 @@ procB <- function(bam, strnd, seed=1, verbose=FALSE, rname='null', keep.junx=FAL
   echrom=TRUE
   if(rname!='null') echrom=FALSE
   lev=NULL
-  if(class(bam$strand)=='factor') lev <- levels(bam$strand)
-  if(class(bam$rname)!='character') bam$rname<-as.character(bam$rname)
+  if(inherits(bam$strand, 'factor')) lev <- levels(bam$strand)
+  if(!inherits(bam$rname, 'character')) bam$rname<-as.character(bam$rname)
   if(verbose) cat("Calculating total number of reads...\n")
-  if(class(bam$qname)!='integer')   bam$qname <- as.integer(as.factor(bam$qname))
+  if(!inherits(bam$qname, 'integer'))   bam$qname <- as.integer(as.factor(bam$qname))
   nreads <- nbReads(bam)
   njunx=1
   if(keep.junx) njunx <- nreads['tjunx']
@@ -101,7 +101,7 @@ procB <- function(bam, strnd, seed=1, verbose=FALSE, rname='null', keep.junx=FAL
   if(echrom) jchrom=vector(mode="character", length=njunx)
   jstrs=vector(mode="integer", length=njunx)
   jlen=vector(mode="integer", length=njunx)
-  if(class(bam$rname)=='factor') bam$rname <- as.character(bam$rname)
+  if(inherits(bam$rname, 'factor')) bam$rname <- as.character(bam$rname)
   ispaired=as.integer(ispaired)
   if(echrom) {
     data<-.Call("procBam", bam$qname, bam$rname, bam$pos, bam$mpos, bam$cigar, as.integer(bam$strand), length(bam$pos), as.integer(nreads), as.integer(bam$flag), as.integer(njunx), len, strs, key, chrom, rid, strand, jchrom, jstrs, jlen, flag, ispaired)
@@ -166,7 +166,7 @@ procB <- function(bam, strnd, seed=1, verbose=FALSE, rname='null', keep.junx=FAL
 #setMethod("procBam", signature(bam='list',stranded='logical',seed='integer',verbose='logical',rname='character',ispaired='logical') ,
 setMethod("procBam", 
           def=function(bam, stranded, seed, verbose, rname, keep.junx, keep.flag, ispaired) {
-            byList <- ifelse(class(bam[[1]])=='list', TRUE, FALSE)
+            byList <- ifelse(is.list(bam[[1]]), TRUE, FALSE)
             if(!byList) {
               ans <- procBamF(bam=bam, stranded=stranded, seed=seed, verbose=verbose, rname=rname, keep.junx=keep.junx, keep.flag=keep.flag, ispaired=ispaired)
             } else {

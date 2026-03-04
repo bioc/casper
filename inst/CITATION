@@ -1,12 +1,19 @@
 citHeader("Please cite the paper below when using casper, and the appropriate methodology articles indicated in the help page of the functions you're using.")
 
-citEntry(entry="article",
-        author= "Rossell D. and Stephan-Otto Attolini C. and Kroiss M. and Stocker A.",
-        title= "Quantifying alternative splicing from paired-end RNA-seq data",
-        journal= "Annals of Applied Statistics",
-        year="2014",
-        volume=8,
-        number=1,
-        pages="309-330",
-        textVersion= "Rossell D, Stephan-Otto Attolini C, Kroiss M, Stocker A. Quantifying Alternative Splicing from Paired-End RNA-sequencing data. Annals of Applied Statistics, 8(1):309-330",
+bibentry(
+  bibtype = "article",
+  author = c(
+    person("D.", "Rossell"),
+    person("C.", "Stephan-Otto Attolini"),
+    person("M.", "Kroiss"),
+    person("A.", "Stocker")
+  ),
+  title = "Quantifying alternative splicing from paired-end RNA-seq data",
+  journal = "Annals of Applied Statistics",
+  year = "2014",
+  volume = "8",
+  number = "1",
+  pages = "309--330"
 )
+
+

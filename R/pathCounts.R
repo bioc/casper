@@ -96,7 +96,7 @@ procPaths <- function(reads, DB, mc.cores, verbose){
 
 setGeneric("pathCounts", function(reads, DB, mc.cores=1, verbose=FALSE) standardGeneric("pathCounts"))
 setMethod("pathCounts", signature(reads='procBam'), function(reads, DB, mc.cores, verbose) {
-  if (class(reads) != 'procBam') stop('reads must be an object of class procBam')
+  if (!inherits(reads, 'procBam')) stop('reads must be an object of class procBam')
   if(!reads@stranded) {
     counts <- procPaths(reads=reads@pbam, DB=DB, mc.cores=mc.cores, verbose=verbose)
     ans <- new("pathCounts", counts=list(counts), denovo=DB@denovo, stranded=reads@stranded)

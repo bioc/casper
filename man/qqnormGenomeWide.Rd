@@ -32,7 +32,7 @@ qqgammaGenomeWide(x, ngenes=min(1000, nrow(x)), ...)
     with genes/isoforms in rows}
   \item{ngenes}{A qqnorm plot is produced for the first \code{ngenes}
     rows in \code{x}}
-  \item{...}{Other arguments to be passed on to code{plot}}
+  \item{...}{Other arguments to be passed on to \code{plot}}
 }
 \value{
   Produces a figure overlaying qq-normal or qq-gamma plots for \code{ngenes}

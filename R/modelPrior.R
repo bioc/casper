@@ -75,7 +75,7 @@ setMethod("plotPriorAS",signature(object='modelPriorAS'), function(object,type='
 )
 
 modelPrior <- function(genomeDB, maxExons=40, smooth=TRUE, verbose=TRUE) {
-  if (class(genomeDB) != "annotatedGenome") stop("genomeDB must be of class 'annotatedGenome'")
+  if (!inherits(genomeDB, "annotatedGenome")) stop("genomeDB must be of class 'annotatedGenome'")
   if(genomeDB@denovo) stop("genomeDB must be a known (not denovo) genome")
   if (verbose) cat("Counting number of annotated transcripts per gene... ")
   # - Compute table txsvPerGene, which counts the nb of annotated transcripts per gene with 1,2... exons.

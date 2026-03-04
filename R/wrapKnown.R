@@ -9,7 +9,7 @@ mergePCWr <- function(x, genomeDB){
 }
 
 mergeDisWr <- function(distrs, pcs, genomeDB, tgroups=5, min.gt.freq=NULL){
-    if(class(distrs[[1]]) == "readDistrsList") {
+    if(inherits(distrs[[1]], "readDistrsList")) {
         if(!'gene_type' %in% colnames(genomeDB@aliases)) stop("gene_type column must be present in genomeDB")
         types <- table(genomeDB@aliases$gene_type)
         if(!is.null(min.gt.freq)){

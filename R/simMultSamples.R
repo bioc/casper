@@ -55,7 +55,8 @@ simMultSamples <- function(nsim, nsamples, nreads, readLength, fragLength, x, gr
   if (missing(distrs)) {
     cat("distrs not specified. Using default\n")
     distrsGSE37704 <- NULL
-    data("distrsGSE37704")
+    data("distrsGSE37704", package = "casper", envir = environment())
+    #data("distrsGSE37704")
     distrs <- distrsGSE37704
   }
   if (!missing(fragLength)) distrs <- setfragLength(distrs, fragLength=fragLength)

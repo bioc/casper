@@ -163,7 +163,7 @@ truncLenDis <- function(ans){
 
 getDistrsFrompBam <- function(DB, pbam, islandid=NULL, verbose=FALSE, nreads=4*10^6, selislands=NULL){
 
-  if (class(pbam) != 'procBam') stop('Argument pbam must be of class procBam')
+  if (!inherits(pbam, 'procBam')) stop('Argument pbam must be of class procBam')
   
   if(!is.null(selislands)) {
       exonsRD <- DB@exonsNI[names(DB@islands[selislands]@unlistData)]

@@ -173,7 +173,9 @@ SEXP casperSimC(SEXP gene_exp, SEXP var_exp, SEXP var_num, SEXP var_len, SEXP ex
         else vansS[i] = starts[1];
 	
 	if(insideBam==1){
-	  sprintf(tmpchar, "%d.%d", i, var+1); SET_STRING_ELT(qname, i*2, Rf_mkChar(tmpchar)); SET_STRING_ELT(qname, i*2+1, Rf_mkChar(tmpchar));
+          snprintf(tmpchar, sizeof(tmpchar), "%d.%d", i, var+1);
+	  //sprintf(tmpchar, "%d.%d", i, var+1); 
+          SET_STRING_ELT(qname, i*2, Rf_mkChar(tmpchar)); SET_STRING_ELT(qname, i*2+1, Rf_mkChar(tmpchar));
 	  SET_STRING_ELT(rname, i*2, Rf_mkChar(genes[gene].chr)); SET_STRING_ELT(rname, i*2+1, Rf_mkChar(genes[gene].chr));
 	  if(genes[gene].vars[var].strand==0) { SET_STRING_ELT(strand, i*2, Rf_mkChar("-")); SET_STRING_ELT(strand, i*2+1, Rf_mkChar("-")); }
 	  else { SET_STRING_ELT(strand, i*2, Rf_mkChar("+")); SET_STRING_ELT(strand, i*2+1, Rf_mkChar("+")); }

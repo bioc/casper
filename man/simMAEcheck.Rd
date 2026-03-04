@@ -8,7 +8,9 @@
   Simulates RNA-seq data under the same experimental setting as in the observed data,
   and compares the observed vector of number of reads per gene with the simulations.
 }
-\usage{simMAEcheck(nsim, islandid, burnin=1000, pc, distr, readLength.pilot, eset.pilot, usePilot=FALSE, retTxsError=FALSE, genomeDB, mc.cores=1, mc.cores.int=1, verbose=FALSE)}
+\usage{simMAEcheck(nsim, islandid, burnin=1000, pc, distr, readLength.pilot, 
+eset.pilot, usePilot=FALSE, retTxsError=FALSE, genomeDB, mc.cores=1, 
+mc.cores.int=1, verbose=FALSE)}
 \arguments{
   \item{nsim}{Number of RNA-seq datasets to generate (often as little as
     \code{nsim=10} suffice)}

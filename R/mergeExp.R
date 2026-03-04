@@ -1,6 +1,6 @@
 mergeExp <- function(..., sampleNames, keep=c('transcript','gene_id','island_id')) {
   esets <- list(...)
-  if (class(esets[[1]])=='list') esets <- unlist(esets)
+  if (is.list(esets[[1]])) esets <- unlist(esets)
   if (length(unique(sapply(esets,nrow))) != 1) stop('Number of rows do not match')
   if (any(sapply(esets,ncol) != 1)) {
     sampleNames <- unlist(lapply(esets, Biobase::sampleNames))

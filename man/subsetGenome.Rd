@@ -37,4 +37,4 @@ subsetGenome(islands, chr, genomeDB)
 }
 }}
 \keyword{methods}
-\keyword{ ~~ other possible keyword(s) ~~ }
+

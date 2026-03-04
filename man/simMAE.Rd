@@ -13,7 +13,10 @@
   The function is a wrapper combining functions simReads and calcExp.
 }
 \usage{
-simMAE(nsim, islandid, nreads, readLength, fragLength, burnin=1000, pc, distr, readLength.pilot=readLength, eset.pilot, usePilot=FALSE, retTxsError=FALSE, genomeDB, mc.cores=1, mc.cores.int=1, verbose=FALSE, writeBam=FALSE, bamFile=NULL)
+simMAE(nsim, islandid, nreads, readLength, fragLength, burnin=1000, pc, 
+distr, readLength.pilot=readLength, eset.pilot, usePilot=FALSE, 
+retTxsError=FALSE, genomeDB, mc.cores=1, mc.cores.int=1, verbose=FALSE, 
+writeBam=FALSE, bamFile=NULL)
 }
 \arguments{
   \item{nsim}{Number of RNA-seq datasets to generate (often as little as

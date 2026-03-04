@@ -1,3 +1,4 @@
+#include <cstring>
 #include <stdio.h>
 #include "model.h"
 
@@ -144,6 +145,7 @@ char* Model::toString()
 
 		v->toString(vstr);
 
+                size_t used = strlen(str);
 		sprintf(str, "%s {%s}", str, vstr);
 
 		delete [] vstr;

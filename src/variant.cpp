@@ -152,18 +152,14 @@ bool Variant::contains(Fragment* frag)
 }
 
 
+void Variant::toString(char *str) {
 
-void Variant::toString(char *str)
-
-{
-
-	str[0] = '\0';
+  str[0] = '\0';
 
 
-
-	for (int e = 0; e < exonCount; e++) sprintf(str, "%s,%i", str, exons[e]->id);
-
-
+  for (int e = 0; e < exonCount; e++)  {
+    sprintf(str, "%s,%i", str, exons[e]->id);
+  }
 
 }
 

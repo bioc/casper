@@ -154,7 +154,8 @@ RNA-sequencing data. Annals of Applied Statistics, 8(1):309-330.
 ##  hg19denovoDB <- procGenome(mygtf, genome='hg19')
 
 ## bamFile="/path_to_bam/sorted.bam"
-##  ans <- wrapDenovo(bamFile=bamFile, targetGenomeDB=hg19denovoDB, knownGenomeDB=hg19DB, readLength=101)
+##  ans <- wrapDenovo(bamFile=bamFile, targetGenomeDB=hg19denovoDB, 
+##    knownGenomeDB=hg19DB, readLength=101)
 
 ## Estimated expression via BMA
 ##  head(exprs(ans[['exp']]))

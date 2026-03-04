@@ -55,4 +55,3 @@
    Named numeric vector with transcript lengths. 
   }
   
-\keyword{ ~~ other possible keyword(s) ~~ }

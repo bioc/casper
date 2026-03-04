@@ -28,21 +28,21 @@ int connectWithinTx(int **p_exons, int **p_islands, int i, int allDone, int **tx
   char id[30];
 
   //get exon id
-  //printf("inside %d %d\n", i, allDone);
-  sprintf(id, "%d", p_islands[0][i]);
+  snprintf(id, sizeof(id), "%d", p_islands[0][i]);
+  //sprintf(id, "%d", p_islands[0][i]);
   // Find transcripts for this exon
   exi = hash_lookup(ex2txP, id);
   //  printf("%d %s %d %d %d\n", i, id, exi, ex2tx[exi][0], ex2tx[exi][1]);
   // For each of these transcripts
   for(j=1; j<ex2tx[exi][0]+1; j++){
     // Find all exons
-    sprintf(id, "%d", ex2tx[exi][j]);
+    snprintf(id, sizeof(id), "%d", ex2tx[exi][j]);
+    //sprintf(id, "%d", ex2tx[exi][j]);
     tx = hash_lookup(tx2exP, id);
-    //printf("before %d %d %s %d %d\n", i, exi, id, tx, tx2ex[tx][0]);
-    //    return(0);
     for(m=1; m<tx2ex[tx][0]+1; m++){
       //Find position of exon in islands array
-      sprintf(id, "%d", tx2ex[tx][m]);
+      snprintf(id, sizeof(id), "%d", tx2ex[tx][m]);
+      //sprintf(id, "%d", tx2ex[tx][m]);
       l = hash_lookup(ex2posP, id);
       //      printf("inside %d %d %d %s %d\n", l, m, tx2ex[tx][m], id, p_islands[1][l]);
       if(p_islands[1][l] == 0){
@@ -74,9 +74,11 @@ int connectTxs(int **p_exons, int **p_islands, int i, int allDone, int tot, int 
 int are_connected(int i, int j, int **p_exons, int **ex2tx, int **tx2ex, hash_t *ex2txP, hash_t *tx2exP){
   int txi, txj, k, m;
   char id[30];
-  sprintf(id, "%d", p_exons[0][i]);
+  snprintf(id, sizeof(id), "%d", p_exons[0][i]);
+  //sprintf(id, "%d", p_exons[0][i]);
   txi = hash_lookup(ex2txP, id);
-  sprintf(id, "%d", p_exons[0][j]);
+  snprintf(id, sizeof(id), "%d", p_exons[0][j]);
+  //sprintf(id, "%d", p_exons[0][j]);
   txj = hash_lookup(ex2txP, id);
 
   for(k=1; k < ex2tx[txi][0]+1; k++) {
@@ -130,16 +132,19 @@ SEXP makeGeneIslands(SEXP exons, SEXP isl, SEXP exisl, SEXP txs, SEXP totEx, SEX
   int exid=1;
   char id[30];
   for(i=0; i<totExo; i++) {
-    sprintf(id, "%d", p_exons[1][i]);
+    snprintf(id, sizeof(id), "%d", p_exons[1][i]);
+    //sprintf(id, "%d", p_exons[1][i]);
     l=hash_lookup(tx2exP,  id);
     if(l==HASH_FAIL) { hash_insert(tx2exP, id, txid); txid++; }
-    sprintf(id, "%d", p_exons[0][i]);
+    snprintf(id, sizeof(id), "%d", p_exons[0][i]);
+    //sprintf(id, "%d", p_exons[0][i]);
     l=hash_lookup(ex2txP, id);
     if(l==HASH_FAIL) { hash_insert(ex2txP, id, exid); exid++; }
    }
 
   for(i=0; i<nex; i++){
-    sprintf(id, "%d", p_islands[0][i]);
+    snprintf(id, sizeof(id), "%d", p_islands[0][i]);
+    //sprintf(id, "%d", p_islands[0][i]);
     hash_insert(ex2posP, id, i);
     //    printf("%d %d %d %s\n", nex, i, hash_lookup(ex2posP, id), id);
   }
@@ -155,7 +160,8 @@ SEXP makeGeneIslands(SEXP exons, SEXP isl, SEXP exisl, SEXP txs, SEXP totEx, SEX
   }
 
   for(i=0; i<totExo; i++){
-     sprintf(id, "%d", p_exons[0][i]);
+     snprintf(id, sizeof(id), "%d", p_exons[0][i]);
+     //sprintf(id, "%d", p_exons[0][i]);
      l=hash_lookup(ex2txP, id);
      if(ex2tx[l][0]==0) {
        ex2tx[l] = malloc((p_tab[i]+2) * sizeof(int));
@@ -163,7 +169,8 @@ SEXP makeGeneIslands(SEXP exons, SEXP isl, SEXP exisl, SEXP txs, SEXP totEx, SEX
      }
      ex2tx[l][ex2tx[l][0]+1] = p_exons[1][i];
      ex2tx[l][0]++;
-     sprintf(id, "%d", p_exons[1][i]);
+     snprintf(id, sizeof(id), "%d", p_exons[1][i]);
+     //sprintf(id, "%d", p_exons[1][i]);
      l=hash_lookup(tx2exP, id);
      if(tx2ex[l][0]==0) {
        tx2ex[l] = malloc((p_tabtx[i]+2) * sizeof(int));
