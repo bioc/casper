@@ -301,8 +301,8 @@ static float alos(hash_t *tptr) {
 VMDEXTERNSTATIC char * hash_stats(hash_t *tptr) {
   static char buf[1024];
 
-  snprintf(buf, sizeof(buf), "%u slots, %u entries, and %.2f ALOS", (unsigned int)tptr->size, (unsigned int)tptr->entries, alos(tptr));
-//  sprintf(buf, "%u slots, %u entries, and %1.2f ALOS", (int)tptr->size, (int)tptr->entries, alos(tptr));
+  sprintf(buf, "%u slots, %u entries, and %1.2f ALOS",
+    (int)tptr->size, (int)tptr->entries, alos(tptr));
 
   return(buf);
 }

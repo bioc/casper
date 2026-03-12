@@ -34,6 +34,7 @@ SEXP uniqQname(SEXP qname, SEXP totReadsR, SEXP pos, SEXP mpos, SEXP names){
   tmp = malloc(200 * sizeof(int));
   idtmp = malloc(30 * sizeof(int));
   for (i=0; i<totReads; i++) {
+    //strcpy(tmp,CHAR(STRING_ELT(qname, i)));
     sprintf(tmp, "%d", qname_p[i]);
     strcat(tmp, ".");
     if(p_pos[i]<p_mpos[i]) sprintf(idtmp, "%d",  p_pos[i]);

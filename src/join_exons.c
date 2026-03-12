@@ -39,8 +39,7 @@ SEXP joinExons(SEXP sexons, SEXP sreads, SEXP stot){
 
   char id[100];
   for(i=0; i<len; i++){
-    snprintf(id, sizeof(id), "%d", reads[i]);
-    //sprintf(id, "%d", reads[i]);
+    sprintf(id, "%d", reads[i]);
     l=hash_lookup(myhashP, id);
     if(l!=HASH_FAIL) {
       links[l][0]++;
@@ -69,14 +68,12 @@ SEXP joinExons(SEXP sexons, SEXP sreads, SEXP stot){
       for(k=2; k<links[i][0]+1; k++) if(links[i][k-1] != links[i][k]) chk++;
       if(chk>0){
 	ans[j] = malloc(15 * (links[i][0]+1) * sizeof(char));
-        snprintf(id, sizeof(id), "%d", links[i][1]);
-	//sprintf(id, "%d", links[i][1]);
+	sprintf(id, "%d", links[i][1]);
 	strcpy(ans[j], id);
 	strcat(ans[j], ".");
 	for(k=2; k<links[i][0]+1; k++) {
 	  if(links[i][k] !=links[i][k-1]){
-            snprintf(id, sizeof(id), "%d", links[i][k]);
-	    //sprintf(id, "%d", links[i][k]);
+	    sprintf(id, "%d", links[i][k]);
 	    strcat(ans[j], id);
 	    strcat(ans[j], ".");
 	  }

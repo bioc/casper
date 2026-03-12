@@ -192,8 +192,7 @@ int *build_path(var_t var, int len, int st, int rl, hash_t *path, int strand, in
       skip=0;
       wis = abs(var.exen[i] - var.exst[i])+1;
       if((sum<=st) && (st<sum+wis)) {
-        snprintf(id, sizeof(id), "%d", var.exid[i]);
-	//sprintf(id, "%d", var.exid[i]);
+	sprintf(id, "%d", var.exid[i]);
 	strcat(pa, id);
 	pos=i;
 	here=1;
@@ -202,16 +201,14 @@ int *build_path(var_t var, int len, int st, int rl, hash_t *path, int strand, in
       if((sum<=en) && (en<sum+wis)) {
 	if(pos!=i){
 	  strcat(pa, ".");
-          snprintf(id, sizeof(id), "%d", var.exid[i]);
-	  //sprintf(id, "%d", var.exid[i]);
+	  sprintf(id, "%d", var.exid[i]);
 	  strcat(pa, id);
 	}
 	break;
       }
       if((skip==0) && (here>0)) {
 	strcat(pa, ".");
-        snprintf(id, sizeof(id), "%d", var.exid[i]);
-	//sprintf(id, "%d", var.exid[i]);
+	sprintf(id, "%d", var.exid[i]);
 	strcat(pa, id);
       }
       sum+=wis;
@@ -225,8 +222,7 @@ int *build_path(var_t var, int len, int st, int rl, hash_t *path, int strand, in
     //  chk=0;
       wis = abs(var.exen[i] - var.exst[i]) + 1;
       if((sum<=rst) && (rst<sum+wis)){
-        snprintf(id, sizeof(id), "%d", var.exid[i]);
-	//sprintf(id, "%d", var.exid[i]);
+	sprintf(id, "%d", var.exid[i]);
 	strcat(pa, id);
 	pos=i;
 	here=1;
@@ -235,8 +231,7 @@ int *build_path(var_t var, int len, int st, int rl, hash_t *path, int strand, in
       if((sum<=ren) && (ren<=sum+wis)) {
 	if(pos!=i){
 	  strcat(pa, ".");
-          snprintf(id, sizeof(id), "%d", var.exid[i]);
-	  //sprintf(id, "%d", var.exid[i]);
+	  sprintf(id, "%d", var.exid[i]);
 	  strcat(pa, id);
 	}
 	strcat(pa, ".");
@@ -244,19 +239,16 @@ int *build_path(var_t var, int len, int st, int rl, hash_t *path, int strand, in
       }
       if((skip==0) && (here>0)) {
 	strcat(pa, ".");
-        snprintf(id, sizeof(id), "%d", var.exid[i]);
-	//sprintf(id, "%d", var.exid[i]);
+	sprintf(id, "%d", var.exid[i]);
 	strcat(pa, id);
       }
       sum+=wis;
     }
   } else {
-    snprintf(id, sizeof(id), "%d", var.exid[0]);
-    //sprintf(id, "%d", var.exid[0]);
+    sprintf(id, "%d", var.exid[0]);
     strcat(pa, id);
     strcat(pa, "-");
-    snprintf(id, sizeof(id), "%d", var.exid[0]);
-    //sprintf(id, "%d", var.exid[0]);
+    sprintf(id, "%d", var.exid[0]);
     strcat(pa, id);
     strcat(pa, ".");
   }

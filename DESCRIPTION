@@ -1,6 +1,6 @@
 Package: casper
-Version: 2.45.1
-Date: 2026-03-04
+Version: 2.45.2
+Date: 2026-03-12
 Title: Characterization of Alternative Splicing Based on Paired-End
         Reads
 Authors@R: c(person(given = "David", family = "Rossell", role = c("aut", "cre"), email = "rosselldavid@gmail.com"), person(given = "Camille", family = "Stephan-Otto", role = "aut"), person(given = "Manuel", family = "Kroiss", role = "aut"), person(given = "Miranda", family = "Stobbe", role = "aut"), person(given = "Victor", family = "Pena", role = "aut"))
